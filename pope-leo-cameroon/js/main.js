@@ -107,13 +107,13 @@ function openNav() {
   navLinksEl.classList.add('open');
   navToggle.classList.add('open');
   navOverlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
+  document.body.classList.add('no-scroll');
 }
 function closeNav() {
   navLinksEl.classList.remove('open');
   navToggle.classList.remove('open');
   navOverlay.classList.remove('active');
-  document.body.style.overflow = '';
+  document.body.classList.remove('no-scroll');
 }
 
 navToggle && navToggle.addEventListener('click', () => {
