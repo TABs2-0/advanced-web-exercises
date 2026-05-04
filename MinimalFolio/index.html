@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joël Fah — Product Designer & Builder</title>
+  <meta name="description" content="Joël Fah is a product designer and builder crafting precise, modern interfaces that feel effortless. UX strategy, design systems, frontend delivery.">
+  <meta name="keywords" content="Joël Fah, product designer, UI UX, design systems, Figma, Flutter, Django, frontend">
+  <meta property="og:title" content="Joël Fah — Product Designer & Builder">
+  <meta property="og:description" content="Crafting interfaces that feel effortless. Design systems, UX strategy, frontend delivery.">
+  <meta property="og:type" content="website">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Main CSS -->
+  <link href="assets/css/main.css" rel="stylesheet">
+</head>
+
+<body class="is-loading" id="top">
+
+  <!-- Skeleton screen / Preloader -->
+  <div id="preloader" aria-hidden="true">
+    <div class="pre-inner">
+      <span class="pre-name">JF</span>
+      <div class="pre-bar"><div class="pre-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header id="header" class="header" role="banner">
+    <div class="header-inner">
+      <a href="#hero" class="logo" aria-label="Joël Fah — home">
+        <span class="logo-mark">JF</span>
+        <span class="logo-name">Joël Fah</span>
+      </a>
+
+      <nav id="navmenu" class="navmenu" role="navigation" aria-label="Main navigation">
+        <ul role="list">
+          <li><a href="#hero" class="nav-link active" data-section="hero">Home</a></li>
+          <li><a href="#about" class="nav-link" data-section="about">About</a></li>
+          <li><a href="#portfolio" class="nav-link" data-section="portfolio">Work</a></li>
+          <li><a href="#services" class="nav-link" data-section="services">Services</a></li>
+          <li><a href="#contact" class="nav-link" data-section="contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <button class="nav-cta" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">
+        Let's talk <i class="bi bi-arrow-up-right"></i>
+      </button>
+
+      <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navmenu">
+        <span></span><span></span>
+      </button>
+    </div>
+    <div class="scroll-progress" role="progressbar" aria-hidden="true"></div>
+  </header>
+
+  <main class="main" id="main-content">
+
+    <!-- ===== HERO SECTION ===== -->
+    <section id="hero" class="hero" aria-label="Introduction">
+      <div class="hero-grid-bg" aria-hidden="true"></div>
+      <div class="hero-orbs" aria-hidden="true">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+        <span class="orb orb-3"></span>
+      </div>
+
+      <div class="container hero-container">
+
+        <!-- Top bar -->
+        <div class="hero-topbar reveal-item" data-delay="0">
+          <div class="hero-status">
+            <span class="status-dot"></span>
+            <span>Available for projects</span>
+          </div>
+          <div class="hero-location">
+            <i class="bi bi-geo-alt"></i>
+            <span>Remote / Anywhere</span>
+          </div>
+        </div>
+
+        <!-- Main headline block -->
+        <div class="hero-headline-block">
+          <div class="hero-label reveal-item" data-delay="100">
+            <span>Product Designer</span>
+            <span class="label-dot">·</span>
+            <span>Builder</span>
+            <span class="label-dot">·</span>
+            <span>Frontend Engineer</span>
+          </div>
+
+          <h1 class="hero-title reveal-item" data-delay="200">
+            <span class="title-line">Design that</span>
+            <span class="title-line title-italic">feels right.</span>
+          </h1>
+
+          <p class="hero-sub reveal-item" data-delay="350">
+            I craft SaaS-grade interfaces that are precise, fast, and effortless — then build the front-end details that make them feel premium.
+          </p>
+
+          <div class="hero-actions reveal-item" data-delay="450">
+            <a href="#portfolio" class="btn-primary-hero">
+              Selected Work
+              <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="#contact" class="btn-ghost-hero">
+              Start a project
+            </a>
+          </div>
+        </div>
+
+        <!-- Bento metrics -->
+        <div class="hero-bento reveal-item" data-delay="550">
+          <div class="bento-cell bento-large">
+            <span class="bento-number">8<sup>+</sup></span>
+            <span class="bento-label">Products shipped</span>
+            <div class="bento-tag">Web · Mobile · SaaS</div>
+          </div>
+          <div class="bento-cell bento-medium">
+            <span class="bento-number">3<sup>+</sup></span>
+            <span class="bento-label">Live products</span>
+          </div>
+          <div class="bento-cell bento-tools">
+            <div class="tool-stack">
+              <span class="tool-badge">Figma</span>
+              <span class="tool-badge">Django</span>
+              <span class="tool-badge">Flutter</span>
+              <span class="tool-badge">HTML/CSS</span>
+              <span class="tool-badge">JS</span>
+            </div>
+            <span class="bento-label">Core stack</span>
+          </div>
+          <div class="bento-cell bento-cta-cell">
+            <a href="https://github.com/Joel-Fah" target="_blank" rel="noopener" class="bento-github" aria-label="GitHub profile">
+              <i class="bi bi-github"></i>
+              <span>Joel-Fah</span>
+              <i class="bi bi-arrow-up-right bento-arrow"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Scroll cue -->
+        <div class="hero-scroll reveal-item" data-delay="700">
+          <span>Scroll</span>
+          <span class="scroll-line"></span>
+        </div>
+
+      </div>
+    </section>
+    <!-- /Hero Section -->
+
+    <!-- ===== ABOUT SECTION ===== -->
+    <section id="about" class="about section" aria-label="About Joël Fah">
+      <div class="container">
+
+        <div class="about-layout">
+
+          <!-- Left: sticky text -->
+          <div class="about-content">
+            <div class="section-eyebrow reveal-item">About</div>
+            <h2 class="section-heading reveal-item">
+              Hi, I'm Joël —<br>
+              <em>a builder who designs</em><br>
+              with intent.
+            </h2>
+            <p class="about-lead reveal-item">
+              I work at the intersection of design and code. I don't just mock up screens — I understand how they get built, and I care deeply about the gap between a Figma frame and what ships.
+            </p>
+            <p class="about-body reveal-item">
+              Based in Cameroon, working globally. My products range from civic tech tools to SaaS platforms and mobile apps. I love the moment a messy user flow becomes something calm and clear — and then I write the code to prove it works.
+            </p>
+            <div class="about-actions reveal-item">
+              <a href="#portfolio" class="link-arrow">
+                View my work <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: principles bento -->
+          <div class="about-bento">
+            <div class="ab-card ab-card--wide reveal-item">
+              <span class="ab-num">01</span>
+              <h3>Clarity first</h3>
+              <p>Every screen answers one main question. The rest is noise.</p>
+            </div>
+            <div class="ab-card reveal-item">
+              <span class="ab-num">02</span>
+              <h3>Flow over friction</h3>
+              <p>Inputs, states, and feedback tuned for momentum.</p>
+            </div>
+            <div class="ab-card reveal-item">
+              <span class="ab-num">03</span>
+              <h3>Built to ship</h3>
+              <p>Clean specs and design tokens that devs actually use.</p>
+            </div>
+            <div class="ab-card ab-card--accent reveal-item">
+              <i class="bi bi-lightning-charge-fill ab-icon"></i>
+              <h3>Fast iteration</h3>
+              <p>Prototype → test → ship. No perfectionism paralysis.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Scrollytelling storyline -->
+        <div class="storyline" aria-label="Design process">
+          <div class="storyline-header reveal-item">
+            <span class="section-eyebrow">Process</span>
+            <h2 class="section-heading-sm">How a product takes shape</h2>
+          </div>
+          <div class="storyline-track">
+            <div class="story-step" data-step="1">
+              <div class="step-number">01</div>
+              <div class="step-content">
+                <h3>Discover the real problem</h3>
+                <p>User interviews, competitive audit, and flow mapping to surface what's actually broken — not just what looks broken.</p>
+              </div>
+            </div>
+            <div class="story-step" data-step="2">
+              <div class="step-number">02</div>
+              <div class="step-content">
+                <h3>Structure before pixels</h3>
+                <p>IA and wireframes that define information hierarchy. No color, no chrome — just logic and flow.</p>
+              </div>
+            </div>
+            <div class="story-step" data-step="3">
+              <div class="step-number">03</div>
+              <div class="step-content">
+                <h3>System thinking, not screen thinking</h3>
+                <p>Components, tokens, variants. Design once, scale everywhere. The system is the product.</p>
+              </div>
+            </div>
+            <div class="story-step" data-step="4">
+              <div class="step-number">04</div>
+              <div class="step-content">
+                <h3>Ship with precision</h3>
+                <p>Handoff specs, interaction notes, and often — direct frontend implementation. What ships is what was designed.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+    <!-- /About Section -->
+
+    <!-- ===== SKILLS SECTION ===== -->
+    <section id="skills" class="skills section light-bg" aria-label="Skills">
+      <div class="container">
+        <div class="section-eyebrow reveal-item">Capabilities</div>
+        <h2 class="section-heading reveal-item">What I bring to<br><em>the table</em></h2>
+
+        <div class="skills-bento">
+          <div class="sk-card sk-design reveal-item">
+            <div class="sk-header">
+              <i class="bi bi-layers sk-icon"></i>
+              <h3>Product Design</h3>
+            </div>
+            <div class="sk-tags">
+              <span>UX Research</span>
+              <span>User Flows</span>
+              <span>Wireframing</span>
+              <span>High-fidelity UI</span>
+              <span>Interaction Design</span>
+              <span>Accessibility</span>
+            </div>
+          </div>
+
+          <div class="sk-card sk-systems reveal-item">
+            <div class="sk-header">
+              <i class="bi bi-grid-3x3-gap sk-icon"></i>
+              <h3>Design Systems</h3>
+            </div>
+            <div class="sk-tags">
+              <span>Component Libraries</span>
+              <span>Design Tokens</span>
+              <span>Figma Variants</span>
+              <span>Documentation</span>
+            </div>
+          </div>
+
+          <div class="sk-card sk-code reveal-item">
+            <div class="sk-header">
+              <i class="bi bi-code-slash sk-icon"></i>
+              <h3>Frontend Engineering</h3>
+            </div>
+            <div class="sk-tags">
+              <span>HTML / CSS</span>
+              <span>JavaScript</span>
+              <span>Bootstrap</span>
+              <span>Django</span>
+              <span>Flutter</span>
+              <span>REST APIs</span>
+            </div>
+          </div>
+
+          <div class="sk-card sk-tools reveal-item">
+            <div class="sk-header">
+              <i class="bi bi-tools sk-icon"></i>
+              <h3>Tools & Workflow</h3>
+            </div>
+            <div class="sk-tags">
+              <span>Figma</span>
+              <span>FigJam</span>
+              <span>GitHub</span>
+              <span>Notion</span>
+              <span>Docker</span>
+            </div>
+          </div>
+
+          <div class="sk-card sk-note reveal-item">
+            <blockquote>
+              "Move from insight to prototype fast, then refine in code."
+            </blockquote>
+            <cite>— How I work</cite>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- /Skills Section -->
+
+    <!-- ===== PORTFOLIO SECTION ===== -->
+    <section id="portfolio" class="portfolio section" aria-label="Selected work">
+      <div class="container">
+
+        <div class="portfolio-header">
+          <div>
+            <div class="section-eyebrow reveal-item">Selected Work</div>
+            <h2 class="section-heading reveal-item">Products I've<br><em>designed & built</em></h2>
+          </div>
+          <div class="portfolio-filters reveal-item" role="group" aria-label="Filter projects">
+            <button class="pf-btn active" data-filter="all">All</button>
+            <button class="pf-btn" data-filter="web">Web</button>
+            <button class="pf-btn" data-filter="mobile">Mobile</button>
+            <button class="pf-btn" data-filter="product">Product</button>
+          </div>
+        </div>
+
+        <div class="portfolio-grid" id="portfolio-grid">
+
+          <!-- Nkwel -->
+          <article class="pj-card reveal-item" data-category="web" tabindex="0" aria-label="Nkwel project">
+            <div class="pj-image">
+              <div class="pj-img-inner">
+                <div class="pj-placeholder" data-proj="nkwel">
+                  <span class="pj-letter">N</span>
+                </div>
+              </div>
+              <div class="pj-badge">Web</div>
+            </div>
+            <div class="pj-content">
+              <div class="pj-meta">
+                <span class="pj-year">2024</span>
+                <span class="pj-type">Marketing Site</span>
+              </div>
+              <h3 class="pj-title">Nkwel</h3>
+              <p class="pj-desc">Marketing site with crisp visual hierarchy and a product overview that communicates value without noise.</p>
+              <div class="pj-links">
+                <a href="https://nkwel.com" target="_blank" rel="noopener" class="pj-link-live">
+                  <span>Live</span> <i class="bi bi-arrow-up-right"></i>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Hinkaku -->
+          <article class="pj-card reveal-item" data-category="web" tabindex="0" aria-label="Hinkaku project">
+            <div class="pj-image">
+              <div class="pj-img-inner">
+                <div class="pj-placeholder" data-proj="hinkaku">
+                  <span class="pj-letter">H</span>
+                </div>
+              </div>
+              <div class="pj-badge">Web</div>
+            </div>
+            <div class="pj-content">
+              <div class="pj-meta">
+                <span class="pj-year">2024</span>
+                <span class="pj-type">Brand Site</span>
+              </div>
+              <h3 class="pj-title">Hinkaku</h3>
+              <p class="pj-desc">Brand-forward website for a tech startup. Designed for clarity, trust, and rapid product communication.</p>
+              <div class="pj-links">
+                <a href="https://hinkaku.tech" target="_blank" rel="noopener" class="pj-link-live">
+                  <span>Live</span> <i class="bi bi-arrow-up-right"></i>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- GeoXPS -->
+          <article class="pj-card reveal-item" data-category="web" tabindex="0" aria-label="GeoXPS project">
+            <div class="pj-image">
+              <div class="pj-img-inner">
+                <div class="pj-placeholder" data-proj="geoxps">
+                  <span class="pj-letter">G</span>
+                </div>
+              </div>
+              <div class="pj-badge">Web</div>
+            </div>
+            <div class="pj-content">
+              <div class="pj-meta">
+                <span class="pj-year">2024</span>
+                <span class="pj-type">Platform Landing</span>
+              </div>
+              <h3 class="pj-title">GeoXPS</h3>
+              <p class="pj-desc">Spatial intelligence platform landing page. A clear value story told through focused layout and intentional flow.</p>
+              <div class="pj-links">
+                <a href="https://geoxps.com" target="_blank" rel="noopener" class="pj-link-live">
+                  <span>Live</span> <i class="bi bi-arrow-up-right"></i>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- TrashTrails -->
+          <article class="pj-card pj-card--featured reveal-item" data-category="product" tabindex="0" aria-label="TrashTrails project">
+            <div class="pj-image">
+              <div class="pj-img-inner">
+                <div class="pj-placeholder" data-proj="trashtrails">
+                  <span class="pj-letter">TT</span>
+                </div>
+              </div>
+              <div class="pj-badge pj-badge--product">Product</div>
+            </div>
+            <div class="pj-content">
+              <div class="pj-meta">
+                <span class="pj-year">2024</span>
+                <span class="pj-type">Civic Tech · Gamification</span>
+              </div>
+              <h3 class="pj-title">TrashTrails</h3>
+              <p class="pj-desc">Gamified mapping app for waste reporting and recycling insights. Built to make civic action feel rewarding and intuitive.</p>
+              <div class="pj-links">
+                <a href="https://trashtrails.hinkaku.tech" target="_blank" rel="noopener" class="pj-link-live">
+                  <span>Live</span> <i class="bi bi-arrow-up-right"></i>
+                </a>
+                <a href="https://github.com/Joel-Fah/TrashTrails" target="_blank" rel="noopener" class="pj-link-gh">
+                  <i class="bi bi-github"></i>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- CleziGov -->
+          <article class="pj-card reveal-item" data-category="mobile" tabindex="0" aria-label="CleziGov project">
+            <div class="pj-image">
+              <div class="pj-img-inner">
+                <div class="pj-placeholder" data-proj="clezigov">
+                  <span class="pj-letter">CG</span>
+                </div>
+              </div>
+              <div class="pj-badge pj-badge--mobile">Mobile</div>
+            </div>
+            <div class="pj-content">
+              <div class="pj-meta">
+                <span class="pj-year">2023</span>
+                <span class="pj-type">Mobile App · Flutter</span>
+              </div>
+              <h3 class="pj-title">CleziGov</h3>
+              <p class="pj-desc">Mobile access to government services. Simplified navigation and clear information architecture for complex civic flows.</p>
+              <div class="pj-links">
+                <a href="https://github.com/Joel-Fah/clezigov" target="_blank" rel="noopener" class="pj-link-gh">
+                  <i class="bi bi-github"></i> Source
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- BDEN -->
+          <article class="pj-card reveal-item" data-category="mobile" tabindex="0" aria-label="BDEN project">
+            <div class="pj-image">
+              <div class="pj-img-inner">
+                <div class="pj-placeholder" data-proj="bden">
+                  <span class="pj-letter">BD</span>
+                </div>
+              </div>
+              <div class="pj-badge pj-badge--mobile">Mobile</div>
+            </div>
+            <div class="pj-content">
+              <div class="pj-meta">
+                <span class="pj-year">2023</span>
+                <span class="pj-type">Mobile App · Emergency</span>
+              </div>
+              <h3 class="pj-title">BDEN</h3>
+              <p class="pj-desc">Blood Donation Emergency Network. Fast, trusted outreach between donors and recipients in critical situations.</p>
+              <div class="pj-links">
+                <a href="https://github.com/Joel-Fah/BDEN" target="_blank" rel="noopener" class="pj-link-gh">
+                  <i class="bi bi-github"></i> Source
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Busin -->
+          <article class="pj-card reveal-item" data-category="mobile" tabindex="0" aria-label="Busin project">
+            <div class="pj-image">
+              <div class="pj-img-inner">
+                <div class="pj-placeholder" data-proj="busin">
+                  <span class="pj-letter">BU</span>
+                </div>
+              </div>
+              <div class="pj-badge pj-badge--mobile">Mobile</div>
+            </div>
+            <div class="pj-content">
+              <div class="pj-meta">
+                <span class="pj-year">2023</span>
+                <span class="pj-type">Mobile App · Transport</span>
+              </div>
+              <h3 class="pj-title">Busin</h3>
+              <p class="pj-desc">Bus operations management app with analytics dashboard, QR-based boarding, and driver/operator flows.</p>
+              <div class="pj-links">
+                <a href="https://github.com/Joel-Fah/busin" target="_blank" rel="noopener" class="pj-link-gh">
+                  <i class="bi bi-github"></i> Source
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- ShopNest -->
+          <article class="pj-card reveal-item" data-category="web" tabindex="0" aria-label="ShopNest project">
+            <div class="pj-image">
+              <div class="pj-img-inner">
+                <div class="pj-placeholder" data-proj="shopnest">
+                  <span class="pj-letter">SN</span>
+                </div>
+              </div>
+              <div class="pj-badge">Web</div>
+            </div>
+            <div class="pj-content">
+              <div class="pj-meta">
+                <span class="pj-year">2022</span>
+                <span class="pj-type">Web App · Django</span>
+              </div>
+              <h3 class="pj-title">ShopNest</h3>
+              <p class="pj-desc">E-commerce Django web app with Docker-based deployment, product management, and streamlined checkout flow.</p>
+              <div class="pj-links">
+                <a href="https://github.com/Joel-Fah/shopnest" target="_blank" rel="noopener" class="pj-link-gh">
+                  <i class="bi bi-github"></i> Source
+                </a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="portfolio-footer reveal-item">
+          <a href="https://github.com/Joel-Fah" target="_blank" rel="noopener" class="btn-outline-full">
+            More on GitHub <i class="bi bi-arrow-up-right"></i>
+          </a>
+        </div>
+
+      </div>
+    </section>
+    <!-- /Portfolio Section -->
+
+    <!-- ===== SERVICES SECTION ===== -->
+    <section id="services" class="services section light-bg" aria-label="Services">
+      <div class="container">
+
+        <div class="services-header">
+          <div>
+            <div class="section-eyebrow reveal-item">Services</div>
+            <h2 class="section-heading reveal-item">What I can<br><em>do for you</em></h2>
+          </div>
+          <p class="services-intro reveal-item">Design and delivery support for product teams who care about quality.</p>
+        </div>
+
+        <div class="services-grid">
+          <div class="sv-card reveal-item">
+            <div class="sv-num">01</div>
+            <div class="sv-icon"><i class="bi bi-layers"></i></div>
+            <h3>Product Design</h3>
+            <p>End-to-end UX: research, flows, wireframes, high-fidelity UI, and interactive prototypes. Design that's ready to hand off and ready to build.</p>
+            <div class="sv-tags">
+              <span>UX Research</span>
+              <span>Prototyping</span>
+              <span>UI Design</span>
+            </div>
+          </div>
+
+          <div class="sv-card reveal-item">
+            <div class="sv-num">02</div>
+            <div class="sv-icon"><i class="bi bi-code-slash"></i></div>
+            <h3>Frontend Implementation</h3>
+            <p>Build-ready layouts, responsive behavior, and clean implementation details. I bridge the gap between design and code.</p>
+            <div class="sv-tags">
+              <span>HTML/CSS</span>
+              <span>JavaScript</span>
+              <span>Django</span>
+            </div>
+          </div>
+
+          <div class="sv-card reveal-item">
+            <div class="sv-num">03</div>
+            <div class="sv-icon"><i class="bi bi-grid-3x3-gap"></i></div>
+            <h3>Design Systems</h3>
+            <p>Components, design tokens, and documentation that scale. Build your product's visual language once, use it everywhere.</p>
+            <div class="sv-tags">
+              <span>Figma Libraries</span>
+              <span>Tokens</span>
+              <span>Docs</span>
+            </div>
+          </div>
+
+          <div class="sv-card reveal-item">
+            <div class="sv-num">04</div>
+            <div class="sv-icon"><i class="bi bi-eye"></i></div>
+            <h3>UX Audits</h3>
+            <p>Practical feedback on your existing product — friction points, accessibility gaps, and a prioritized list of high-impact improvements.</p>
+            <div class="sv-tags">
+              <span>Audit</span>
+              <span>Accessibility</span>
+              <span>Quick wins</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+    <!-- /Services Section -->
+
+    <!-- ===== CONTACT SECTION ===== -->
+    <section id="contact" class="contact section" aria-label="Contact">
+      <div class="container">
+
+        <div class="contact-layout">
+
+          <!-- Left: info -->
+          <div class="contact-info">
+            <div class="section-eyebrow reveal-item">Contact</div>
+            <h2 class="section-heading reveal-item">
+              Let's make<br>
+              <em>something precise.</em>
+            </h2>
+            <p class="contact-sub reveal-item">
+              Have a product that needs design clarity or a UI that needs implementation? Let's talk.
+            </p>
+
+            <div class="contact-details reveal-item">
+              <a href="mailto:joelfah2003@gmail.com" class="cd-item">
+                <div class="cd-icon"><i class="bi bi-envelope"></i></div>
+                <div>
+                  <span class="cd-label">Email</span>
+                  <span class="cd-value">joelfah2003@gmail.com</span>
+                </div>
+              </a>
+              <div class="cd-item">
+                <div class="cd-icon"><i class="bi bi-geo-alt"></i></div>
+                <div>
+                  <span class="cd-label">Location</span>
+                  <span class="cd-value">Cameroon · Remote</span>
+                </div>
+              </div>
+              <div class="cd-item">
+                <div class="cd-icon"><i class="bi bi-lightning-charge"></i></div>
+                <div>
+                  <span class="cd-label">Response</span>
+                  <span class="cd-value">Within 24–48 hours</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="contact-socials reveal-item">
+              <a href="https://linkedin.com/in/joelfah" target="_blank" rel="noopener" class="cs-link" aria-label="LinkedIn">
+                <i class="bi bi-linkedin"></i>
+              </a>
+              <a href="https://github.com/Joel-Fah" target="_blank" rel="noopener" class="cs-link" aria-label="GitHub">
+                <i class="bi bi-github"></i>
+              </a>
+              <a href="https://x.com/FahDejon" target="_blank" rel="noopener" class="cs-link" aria-label="X / Twitter">
+                <i class="bi bi-twitter-x"></i>
+              </a>
+              <a href="https://figma.com/@joelfah" target="_blank" rel="noopener" class="cs-link" aria-label="Figma">
+                <i class="bi bi-bezier2"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: form -->
+          <div class="contact-form-wrap reveal-item">
+            <form class="contact-form" id="contact-form" action="forms/contact.php" method="post" novalidate>
+              <div class="cf-row">
+                <div class="cf-field">
+                  <label for="cf-name">Name</label>
+                  <input type="text" id="cf-name" name="name" placeholder="Your name" required autocomplete="name">
+                </div>
+                <div class="cf-field">
+                  <label for="cf-email">Email</label>
+                  <input type="email" id="cf-email" name="email" placeholder="your@email.com" required autocomplete="email">
+                </div>
+              </div>
+              <div class="cf-field">
+                <label for="cf-subject">Subject</label>
+                <input type="text" id="cf-subject" name="subject" placeholder="Product design · UX audit · Frontend" required>
+              </div>
+              <div class="cf-field">
+                <label for="cf-message">Message</label>
+                <textarea id="cf-message" name="message" rows="5" placeholder="Tell me about your project, timeline, and what success looks like for you..." required></textarea>
+              </div>
+              <div class="cf-status" aria-live="polite">
+                <div class="cf-loading" hidden>Sending…</div>
+                <div class="cf-error" hidden></div>
+                <div class="cf-success" hidden>Sent! I'll be in touch soon.</div>
+              </div>
+              <button type="submit" class="cf-submit">
+                Send Message
+                <i class="bi bi-arrow-right"></i>
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+    <!-- /Contact Section -->
+
+  </main>
+
+  <!-- Footer -->
+  <footer id="footer" class="footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="footer-logo">JF</span>
+          <p>Say hi if you have a product idea, a messy flow, or a UI that needs clarity.</p>
+        </div>
+        <div class="footer-cols">
+          <div class="footer-col">
+            <span class="fc-title">Navigate</span>
+            <a href="#portfolio">Work</a>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#contact">Contact</a>
+          </div>
+          <div class="footer-col">
+            <span class="fc-title">Elsewhere</span>
+            <a href="https://linkedin.com/in/joelfah" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="https://github.com/Joel-Fah" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://x.com/FahDejon" target="_blank" rel="noopener">X</a>
+            <a href="https://figma.com/@joelfah" target="_blank" rel="noopener">Figma</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Joël Fah</span>
+        <span class="footer-sep">·</span>
+        <span>Built with care and a lot of squircles</span>
+        <span class="footer-sep footer-sep--desktop">·</span>
+        <a href="https://bootstrapmade.com/" class="footer-credit">MinimalFolio base by BootstrapMade</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#top" id="scroll-top" class="scroll-top" aria-label="Back to top">
+    <i class="bi bi-arrow-up"></i>
+  </a>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Main JS -->
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html>
