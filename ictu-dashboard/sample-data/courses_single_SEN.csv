@@ -1,0 +1,5 @@
+CourseCode,CourseName,Credits,Grade,Semester
+SEN101,Intro to Software Eng,3,15.4,Fall 2023
+SEN102,Requirements Eng,3,19.4,Spring 2024
+SEN201,Software Architecture,4,12.4,Fall 2023
+SEN202,Testing and QA,4,16.5,Spring 2024

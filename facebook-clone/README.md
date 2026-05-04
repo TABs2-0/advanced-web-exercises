@@ -1,5 +1,8 @@
 # Facebook UI Clone
 
+![Facebook Login Page Clone](assets/docs/facebook-login.png)
+![Face Sign Up Page Clone](assets/docs/facebook-register.png)
+
 A pixel-faithful recreation of Facebook's splash screen, login page, and registration page — built with **plain HTML and CSS** (no frameworks, no preprocessors). Includes minimal **Vanilla JavaScript** for simple interactions.
 
 ---

@@ -8,7 +8,74 @@ document.addEventListener('DOMContentLoaded', function () {
   initLayout('Courses');
   if (typeof AOS !== 'undefined') AOS.init({ duration: 600, once: true, offset: 60 });
   buildPage();
+  setupCourseUpload();
 });
+
+function setupCourseUpload() {
+  const input = document.getElementById('courseCsvInput');
+  if (!input) return;
+  input.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (typeof Papa === 'undefined') {
+      showToast('CSV Parser not loaded.', 'error');
+      return;
+    }
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        let importedCount = 0;
+        let errors = 0;
+
+        results.data.forEach(row => {
+          const sid = row.StudentID || row.studentId || row.studentid || currentStudentId;
+          const code = row.CourseCode || row.Course || row.code;
+          const name = row.CourseName || row.Name || row.name;
+          const creds = parseInt(row.Credits || row.credits, 10);
+          const grade = parseFloat(row.Grade || row.grade || row.score);
+          const sem = row.Semester || row.semester || 'N/A';
+
+          if (!sid || !code || !name || isNaN(creds) || isNaN(grade)) {
+            errors++;
+            return;
+          }
+          
+          if (!getStudentById(sid)) {
+            errors++;
+            return;
+          }
+
+          saveCourse({
+            studentId: sid,
+            courseCode: code,
+            courseName: name,
+            credits: creds,
+            grade: grade,
+            semester: sem,
+            courseId: code.toLowerCase() + '-' + Date.now() + Math.random().toString(36).substr(2, 9)
+          });
+          importedCount++;
+        });
+
+        if (importedCount > 0) {
+          showToast(`Successfully imported ${importedCount} courses. ${errors > 0 ? '(' + errors + ' skipped)' : ''}`, 'success');
+          if (currentStudentId) renderCoursesTable();
+          if (currentStudentId) renderStudentInfoCard(getStudentById(currentStudentId));
+        } else {
+          showToast('No valid courses found in CSV.', 'error');
+        }
+        input.value = ''; // reset
+      }
+    });
+  });
+}
+
+function triggerCourseUpload() {
+  document.getElementById('courseCsvInput').click();
+}
 
 function buildPage() {
   const pc = document.getElementById('pageContent');
@@ -31,8 +98,13 @@ function buildSelectStudentView(pc) {
   const students = getAllStudents();
   pc.innerHTML = `
     <div class="page-header" data-aos="fade-right">
-      <h1 class="section-title">Courses</h1>
-      <p class="section-subtitle">Select a student to manage their course records.</p>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:var(--space-4)">
+        <div>
+          <h1 class="section-title">Courses</h1>
+          <p class="section-subtitle">Select a student to manage their course records or bulk upload courses.</p>
+        </div>
+        <button class="btn btn--ghost btn--sm" onclick="triggerCourseUpload()">📥 Bulk Upload Courses</button>
+      </div>
     </div>
     <div class="card" style="max-width:480px" data-aos="fade-up">
       <div class="form-group">
@@ -64,7 +136,10 @@ function buildStudentCourseView(pc, student) {
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)">
       <h3 style="font-family:var(--font-serif);font-size:1.2rem">Course Records</h3>
-      <button class="btn btn--terracotta btn--sm" onclick="openCourseForm()">➕ Add Course</button>
+      <div style="display:flex;gap:var(--space-2)">
+        <button class="btn btn--ghost btn--sm" onclick="triggerCourseUpload()">📥 Import Courses</button>
+        <button class="btn btn--terracotta btn--sm" onclick="openCourseForm()">➕ Add Course</button>
+      </div>
     </div>
 
     <div class="table-wrapper" data-aos="fade-up" data-aos-delay="100">

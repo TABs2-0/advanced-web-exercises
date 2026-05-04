@@ -1,5 +1,8 @@
 # ICTU Smart Student Management Dashboard
 
+![Dashboard Overview](assets/docs/ictu-clone.png)
+![Report Preview](assets/docs/ict-clone-report.png)
+
 A fully client-side Student Management System for ICT University, built with plain HTML, CSS, and Vanilla JavaScript. No backend, no build tools — just open `index.html` in a browser.
 
 ## 🚀 Getting Started

@@ -1,0 +1,5 @@
+CourseCode,CourseName,Credits,Grade,Semester
+NET101,Networking Basics,3,18.9,Fall 2023
+NET102,LAN Switching,3,16.6,Spring 2024
+NET201,Routing Protocols,4,16.6,Fall 2023
+NET202,Network Security,4,17.9,Spring 2024
