@@ -15,3 +15,7 @@ An administrative dashboard replica designed for ICT Univesity to practice compl
 ### 3. Pope Leo's Visit to Cameroon (`pope-leo-cameroon`)
 A commemorative web page documenting detailed events, quotes, and insights into the Pope's historic visit to Cameroon.
 ![Pope Visits Cameroon](pope-leo-cameroon/assets/docs/pope-visits-cameroon.png)
+
+### 4. MinimalFolio Portfolio (`MinimalFolio`)
+A custom Bootstrap portfolio site with a dock-style nav, dynamic project and service detail pages, and a focused editorial layout.
+![MinimalFolio Preview](MinimalFolio/assets/docs/minimalfolio.png)
