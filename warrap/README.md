@@ -2,6 +2,8 @@
 
 > Stop scrolling. Start strolling to your next warrap.
 
+![Warrap Hero](static/docs/warrap_hero.png)
+
 **Warrap** (n.) — Cameroonian slang for a quick, informal job you do for some money. Not too formal. Not too serious. Just hustle.
 
 Warrap is a geospatial gig-map for Cameroonian students and hustlers. It maps short-term informal tasks near you so you can find paid work without a CV, a contact, or a corporate email address.

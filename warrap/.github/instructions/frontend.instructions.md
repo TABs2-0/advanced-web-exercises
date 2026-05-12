@@ -1256,7 +1256,7 @@ Run these checks after rebuilding any page:
 □ Seed data command runs: `python manage.py seed_data`
 □ API returns tasks: curl http://localhost:8000/hustles/api/nearby/?lat=3.848&lng=11.502
 ```
-<!-- nd let -->
+
 ---
 
 *This document is the single source of truth for frontend decisions. When in doubt: more whitespace, larger text, bolder hierarchy, more animation delight. Do not be timid.*

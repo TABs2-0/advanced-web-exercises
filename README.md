@@ -19,3 +19,8 @@ A commemorative web page documenting detailed events, quotes, and insights into 
 ### 4. MinimalFolio Portfolio (`MinimalFolio`)
 A custom Bootstrap portfolio site with a dock-style nav, dynamic project and service detail pages, and a focused editorial layout.
 ![MinimalFolio Preview](MinimalFolio/assets/docs/minimalfolio.png)
+
+
+### 5. Final Project: Warrap (`warrap`)
+Warrap is a geospatial gig-map for Cameroonian students and hustlers. It maps short-term informal tasks near you so you can find paid work without a CV, a contact, or a corporate email address.
+![Warrap Hero](warrap/static/docs/warrap_hero.png)
