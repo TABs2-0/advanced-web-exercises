@@ -5,101 +5,91 @@
 
 {% block content %}
 <div class="section-container py-8">
-
-  <!-- Ghost watermark -->
-  <p class="ghost-headline text-center mb-[-3rem] select-none">
-    {{ profile_user.username }}
-  </p>
+  <p class="ghost-headline text-center mb-[-3rem] select-none">{{ profile_user.username }}</p>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    <!-- Profile card -->
     <div class="lg:col-span-1">
       <div class="card text-center relative animate-slide-up">
-
-        <!-- Avatar portrait -->
         <div class="relative inline-block mb-4">
           <img src="{{ profile_user.avatar_url }}"
                alt="{{ profile_user.display_name }}"
-               class="w-24 h-24 rounded-circle object-cover mx-auto border-2 border-white shadow-card" />
+               class="w-24 h-24 rounded-btn object-cover mx-auto border-2 border-white shadow-card" />
           {% if profile_user.badge %}
-            <span class="absolute -bottom-1 -right-1 text-lg" title="{{ profile_user.get_badge_display }}">
-              {% if profile_user.badge == 'digital_ninja' %}💻
-              {% elif profile_user.badge == 'muscle_crew' %}💪
-              {% elif profile_user.badge == 'event_plug' %}🎉
-              {% elif profile_user.badge == 'delivery_rep' %}🏍️
-              {% elif profile_user.badge == 'all_rounder' %}⭐
+            <span class="absolute -bottom-1 -right-1 w-9 h-9 rounded-btn bg-ink text-canvas border-2 border-white flex items-center justify-center" title="{{ profile_user.get_badge_display }}">
+              {% if profile_user.badge == 'digital_ninja' %}<i class="ri-macbook-line"></i>
+              {% elif profile_user.badge == 'muscle_crew' %}<i class="ri-hand-heart-line"></i>
+              {% elif profile_user.badge == 'event_plug' %}<i class="ri-calendar-event-line"></i>
+              {% elif profile_user.badge == 'delivery_rep' %}<i class="ri-riding-line"></i>
+              {% elif profile_user.badge == 'all_rounder' %}<i class="ri-shield-star-line"></i>
               {% endif %}
             </span>
           {% endif %}
         </div>
 
         <h1 class="text-card-title font-medium text-ink">{{ profile_user.display_name }}</h1>
-        <p class="text-sm text-slate mb-1">@{{ profile_user.username }}</p>
+        <p class="text-base text-slate mb-1">@{{ profile_user.username }}</p>
         {% if profile_user.city %}
-          <p class="text-xs text-slate">{{ profile_user.get_city_display }}</p>
+          <p class="text-sm text-slate"><i class="ri-map-pin-line"></i> {{ profile_user.get_city_display }}</p>
         {% endif %}
 
         {% if profile_user.bio %}
-          <p class="text-sm font-body text-charcoal mt-3 px-2">{{ profile_user.bio }}</p>
+          <p class="text-base font-body text-charcoal mt-3 px-2">{{ profile_user.bio }}</p>
         {% endif %}
 
-        <!-- Stats row -->
         <div class="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-ink/5">
           <div>
             <p class="text-xl font-medium text-ink">{{ profile_user.cred_display }}</p>
-            <p class="text-[10px] text-slate uppercase tracking-wider">{% trans "Street Cred" %}</p>
+            <p class="text-xs text-slate uppercase tracking-wider">{% trans "Street Cred" %}</p>
           </div>
           <div>
             <p class="text-xl font-medium text-ink">{{ profile_user.total_completed }}</p>
-            <p class="text-[10px] text-slate uppercase tracking-wider">{% trans "Done" %}</p>
+            <p class="text-xs text-slate uppercase tracking-wider">{% trans "Done" %}</p>
           </div>
           <div>
             <p class="text-xl font-medium text-ink">{{ profile_user.vouch_count }}</p>
-            <p class="text-[10px] text-slate uppercase tracking-wider">{% trans "Vouches" %}</p>
+            <p class="text-xs text-slate uppercase tracking-wider">{% trans "Vouches" %}</p>
           </div>
         </div>
 
-        <!-- Badge -->
         {% if profile_user.badge %}
           <div class="mt-4">
             <span class="category-pill bg-amber-50 text-amber-800 border-amber-200">
+              <i class="ri-shield-star-line"></i>
               {{ profile_user.get_badge_display }}
             </span>
           </div>
         {% endif %}
 
-        <!-- Actions -->
         <div class="mt-6 flex flex-col gap-2">
           {% if user == profile_user %}
-            <a href="{% url 'accounts:edit_profile' %}" class="btn-secondary text-sm w-full justify-center">
+            <a href="{% url 'accounts:edit_profile' %}" class="btn-secondary w-full justify-center">
+              <i class="ri-settings-3-line"></i>
               {% trans "Edit profile" %}
             </a>
           {% elif user.is_authenticated %}
             {% if can_vouch %}
               <form method="post" action="{% url 'accounts:vouch' profile_user.username %}">
                 {% csrf_token %}
-                <button type="submit" class="btn-primary w-full text-sm justify-center">
+                <button type="submit" class="btn-primary w-full justify-center">
+                  <i class="ri-shield-check-line"></i>
                   {% trans "Vouch for this Hustler" %}
                 </button>
               </form>
             {% elif already_vouched %}
-              <p class="text-xs text-slate">{% trans "You already vouched for this person." %}</p>
+              <p class="text-sm text-slate">{% trans "You already vouched for this person." %}</p>
             {% endif %}
           {% endif %}
         </div>
-
       </div>
 
-      <!-- Recent vouches -->
       {% if vouches_received %}
         <div class="mt-4 card">
           <p class="eyebrow text-xs mb-3">{% trans "Vouches" %}</p>
           <div class="flex flex-col gap-2">
             {% for vouch in vouches_received %}
               <div class="flex items-center gap-2">
-                <img src="{{ vouch.voucher.avatar_url }}" class="w-7 h-7 rounded-circle object-cover" alt="" />
-                <p class="text-xs text-ink">
+                <img src="{{ vouch.voucher.avatar_url }}" class="w-8 h-8 rounded-btn object-cover" alt="" />
+                <p class="text-sm text-ink">
                   <a href="{% url 'accounts:profile' vouch.voucher.username %}" class="font-medium hover:text-signal transition-colors">@{{ vouch.voucher.username }}</a>
                   {% trans "vouched" %}
                   <span class="text-slate">· {{ vouch.created_at|naturalday }}</span>
@@ -111,37 +101,28 @@
       {% endif %}
     </div>
 
-    <!-- Recent tasks -->
     <div class="lg:col-span-2">
       <p class="eyebrow mb-4">{% trans "Completed Hustles" %}</p>
 
       {% if recent_tasks %}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {% for task in recent_tasks %}
-            <a href="{% url 'hustles:task_detail' task.pk %}"
-               class="block bg-white border border-ink/5 rounded-hero p-4 hover:shadow-card transition-all duration-200 group">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="category-pill text-[10px]">{{ task.get_category_display }}</span>
-              </div>
-              <p class="text-sm font-medium text-ink group-hover:text-signal transition-colors leading-snug">{{ task.title }}</p>
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-xs text-slate">{{ task.updated_at|naturalday }}</span>
-                <span class="text-xs font-medium text-ink">{{ task.pay_display }}</span>
-              </div>
-            </a>
+            {% include "partials/task_card.html" with task=task %}
           {% endfor %}
         </div>
       {% else %}
         <div class="bg-white border border-ink/5 rounded-hero p-12 text-center text-slate">
-          <p class="text-3xl mb-2">🏙️</p>
-          <p class="text-sm">{% trans "No completed hustles yet." %}</p>
+          <i class="ri-building-2-line text-4xl text-slate mb-2 block"></i>
+          <p class="text-base">{% trans "No completed hustles yet." %}</p>
           {% if user == profile_user %}
-            <a href="{% url 'hustles:map' %}" class="btn-primary mt-4 text-xs inline-flex">{% trans "Find a hustle" %}</a>
+            <a href="{% url 'hustles:map' %}" class="btn-primary mt-4 inline-flex">
+              <i class="ri-map-2-line"></i>
+              {% trans "Find a hustle" %}
+            </a>
           {% endif %}
         </div>
       {% endif %}
     </div>
-
   </div>
 </div>
 {% endblock %}

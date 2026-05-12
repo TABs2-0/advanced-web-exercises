@@ -99,9 +99,9 @@ module.exports = {
             borderRadius: {
                 "none": "0",
                 "sm": "3px",          // tiny decorative chips
-                "btn": "20px",        // primary & secondary CTA buttons
-                "consent": "24px",    // consent / signal pill buttons
-                "hero": "40px",       // hero media frames, stadium containers
+                "btn": "16px",        // primary & secondary CTA buttons
+                "consent": "18px",    // consent / signal pill buttons
+                "hero": "26px",       // squircle cards and media frames
                 "full": "999px",      // nav pill, carousel cards, dropdowns
                 "circle": "50%",      // portraits, icon buttons
             },
@@ -130,6 +130,8 @@ module.exports = {
                 "slide-up": "slideUp 0.4s ease-out",
                 "pulse-pin": "pulsePin 1.5s ease-in-out infinite",
                 "spin-slow": "spin 3s linear infinite",
+                "bounce-in": "bounceIn 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97)",
+                "scale-in":  "scaleIn 0.2s ease-out",
             },
             keyframes: {
                 fadeIn: {
@@ -143,6 +145,15 @@ module.exports = {
                 pulsePin: {
                     "0%, 100%": {transform: "scale(1)", opacity: "1"},
                     "50%": {transform: "scale(1.25)", opacity: "0.7"},
+                },
+                bounceIn: {
+                    "0%":   { transform: "scale(0.8)", opacity: "0" },
+                    "60%":  { transform: "scale(1.05)" },
+                    "100%": { transform: "scale(1)", opacity: "1" },
+                },
+                scaleIn: {
+                    "0%":   { transform: "scale(0.95)", opacity: "0" },
+                    "100%": { transform: "scale(1)", opacity: "1" },
                 },
             },
 
@@ -158,8 +169,29 @@ module.exports = {
          * for forms. If you don't like it or have own styling for forms,
          * comment the line below to disable '@tailwindcss/forms'.
          */
-        require('@tailwindcss/forms'),
+        require('@tailwindcss/forms')({ strategy: 'class' }),
         require('@tailwindcss/typography'),
         require('@tailwindcss/aspect-ratio'),
+        function({ addUtilities }) {
+            addUtilities({
+              '.scrollbar-none': {
+                '-ms-overflow-style': 'none',
+                'scrollbar-width': 'none',
+                '&::-webkit-scrollbar': { display: 'none' },
+              },
+              '.line-clamp-1': {
+                overflow: 'hidden',
+                display: '-webkit-box',
+                '-webkit-box-orient': 'vertical',
+                '-webkit-line-clamp': '1',
+              },
+              '.line-clamp-2': {
+                overflow: 'hidden',
+                display: '-webkit-box',
+                '-webkit-box-orient': 'vertical',
+                '-webkit-line-clamp': '2',
+              },
+            });
+        },
     ],
 }

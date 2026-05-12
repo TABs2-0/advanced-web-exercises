@@ -1,52 +1,56 @@
 {% extends "base.html" %}
-{% load i18n humanize %}
+{% load static i18n humanize %}
 
-{% block title %}{% trans "My Hustles" %}{% endblock %}
+{% block title %}My Hustles{% endblock %}
 
 {% block content %}
-<div class="section-container py-8">
-
-  <p class="eyebrow mb-3">{% trans "My Hustles" %}</p>
-  <h1 class="text-[clamp(24px,3vw,40px)] font-medium tracking-tight mb-8">
-    {% trans "Your hustle history" %}
-  </h1>
-
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-    <!-- Posted -->
+<div class="section-container py-8 max-w-4xl">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
     <div>
-      <h2 class="text-card-title font-medium text-ink mb-4">{% trans "Tasks I Posted" %}</h2>
-      {% if posted %}
-        <div class="flex flex-col gap-3">
-          {% for task in posted %}
-            {% include "partials/task_card.html" %}
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="bg-white border border-ink/5 rounded-hero p-8 text-center text-slate text-sm">
-          <p>{% trans "You haven't posted any tasks yet." %}</p>
-          <a href="{% url 'hustles:post_task' %}" class="btn-primary mt-4 text-xs inline-flex">{% trans "Post one now" %}</a>
-        </div>
-      {% endif %}
+      <p class="eyebrow text-slate mb-2">{% trans "Dashboard" %}</p>
+      <h1 class="text-section font-medium tracking-tight text-ink">My Hustles</h1>
     </div>
+    <a href="{% url 'hustles:post_task' %}" class="btn-primary">
+      <i class="ri-add-line"></i>
+      {% trans "Post a hustle" %}
+    </a>
+  </div>
 
-    <!-- Claimed -->
-    <div>
-      <h2 class="text-card-title font-medium text-ink mb-4">{% trans "Tasks I Claimed" %}</h2>
-      {% if claimed %}
-        <div class="flex flex-col gap-3">
-          {% for task in claimed %}
-            {% include "partials/task_card.html" %}
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="bg-white border border-ink/5 rounded-hero p-8 text-center text-slate text-sm">
-          <p>{% trans "You haven't claimed any tasks yet." %}</p>
-          <a href="{% url 'hustles:map' %}" class="btn-primary mt-4 text-xs inline-flex">{% trans "Find a hustle" %}</a>
-        </div>
-      {% endif %}
-    </div>
+  <div class="flex gap-1 bg-white border border-ink/10 p-1 rounded-btn w-fit mb-6 shadow-sm" role="tablist">
+    <button role="tab" class="tab active" data-tab="posted" onclick="switchTab('posted')">Posted ({{ posted.count }})</button>
+    <button role="tab" class="tab" data-tab="claimed" onclick="switchTab('claimed')">Claimed ({{ claimed.count }})</button>
+  </div>
 
+  <div id="panel-posted" class="tab-panel">
+    {% if posted %}
+      <div class="grid sm:grid-cols-2 gap-4">
+        {% for task in posted %}
+          {% include "partials/task_card.html" with task=task %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card text-center py-12">
+        <i class="ri-briefcase-line text-4xl text-slate"></i>
+        <p class="text-slate my-4">You have not posted any jobs yet.</p>
+        <a href="{% url 'hustles:post_task' %}" class="btn-primary justify-center">Post a Hustle</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <div id="panel-claimed" class="tab-panel hidden">
+    {% if claimed %}
+      <div class="grid sm:grid-cols-2 gap-4">
+        {% for task in claimed %}
+          {% include "partials/task_card.html" with task=task %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card text-center py-12">
+        <i class="ri-map-2-line text-4xl text-slate"></i>
+        <p class="text-slate my-4">You have not claimed anything yet.</p>
+        <a href="{% url 'hustles:map' %}" class="btn-primary justify-center">Find work</a>
+      </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

@@ -141,6 +141,13 @@ CACHES = {
 # ---------------------------------------------------------------------------
 # Authentication — Custom User + django-allauth
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Notifications — VAPID Web Push
+# ---------------------------------------------------------------------------
+VAPID_PUBLIC_KEY = env("VAPID_PUBLIC_KEY", default="")
+VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="")
+VAPID_ADMIN_EMAIL = env("VAPID_ADMIN_EMAIL", default="admin@warrap.cm")
+
 AUTH_USER_MODEL = "accounts.User"
 
 AUTHENTICATION_BACKENDS = [
@@ -154,19 +161,19 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 
 # allauth core settings
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"  # allow login by username OR email
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_EMAIL_VERIFICATION = "optional"  # set to "mandatory" in prod with SMTP
-ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_SIGNUP_REDIRECT_URL = "hustles:map"
 ACCOUNT_LOGIN_REDIRECT_URL = "hustles:map"
-ACCOUNT_LOGOUT_REDIRECT_URL = "accounts:login"
+ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 ACCOUNT_LOGOUT_ON_GET = False  # POST required for logout (CSRF safety)
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_SIGNUP_FIELDS = [
     "username*", "email*", "first_name*", "last_name*", "password1*", "password2*",
 ]
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_STORE_TOKENS = True
 
 # Custom allauth forms (we extend them to add city, phone fields)
 ACCOUNT_FORMS = {
@@ -188,7 +195,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 SOCIALACCOUNT_AUTO_SIGNUP = True  # skip signup form for social users
 SOCIALACCOUNT_EMAIL_REQUIRED = True
-SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 
 # Legacy redirect settings (still used by some allauth internals)
 LOGIN_URL = "account_login"

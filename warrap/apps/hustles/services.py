@@ -12,6 +12,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import Distance
 from django.core.cache import cache
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -107,7 +108,8 @@ def get_nearby_tasks(
         status=Task.StatusChoices.OPEN,
         expires_at__gt=timezone.now(),
     ).filter(
-        location_approx__distance_lte=(user_point, Distance(m=radius_m))
+        Q(location_approx__distance_lte=(user_point, Distance(m=radius_m)))
+        | Q(location_approx__isnull=True, location__distance_lte=(user_point, Distance(m=radius_m)))
     ).select_related("poster")
 
     if category:
@@ -115,6 +117,7 @@ def get_nearby_tasks(
 
     tasks = []
     for t in qs[:limit]:
+        public_location = t.location_approx or t.location
         tasks.append({
             "id": t.pk,
             "title": t.title,
@@ -122,8 +125,8 @@ def get_nearby_tasks(
             "category_display": t.get_category_display(),
             "pay": str(t.pay),
             "pay_display": t.pay_display,
-            "lat": t.location_approx.y,
-            "lng": t.location_approx.x,
+            "lat": public_location.y,
+            "lng": public_location.x,
             "neighborhood": t.neighborhood,
             "is_flash_gig": t.is_flash_gig,
             "expires_at": t.expires_at.isoformat(),
@@ -145,27 +148,38 @@ def claim_task(task_id: int, claimer) -> Task:
     Atomically lock a task for a claimer.
     Raises HustleError on any violation.
     """
-    # Select for update to prevent race conditions
     try:
+        # Select for update to prevent race conditions
         task = Task.objects.select_for_update().get(pk=task_id)
+
+        if task.poster == claimer:
+            raise HustleError(_("You cannot claim your own task."))
+
+        if task.status != Task.StatusChoices.OPEN:
+            raise AlreadyClaimedError(_("Someone else got there first. Keep hunting."))
+
+        if task.is_expired:
+            raise HustleError(_("This task has already expired."))
+
+        task.claimer = claimer
+        task.status = Task.StatusChoices.CLAIMED
+        task.save(update_fields=["claimer", "status", "updated_at"])
+
+        # Create a notification for the poster
+        from apps.notifications.models import Notification
+        Notification.objects.create(
+            recipient=task.poster,
+            kind=Notification.KindChoices.TASK_CLAIMED,
+            title=f"Your task '{task.title}' was claimed!",
+            body=f"@{claimer.username} just locked your warrap.",
+            url=f"/hustles/{task.pk}/",
+        )
+
+        _bust_map_cache()
+        return task
+
     except Task.DoesNotExist:
         raise HustleError(_("This hustle no longer exists."))
-
-    if task.poster == claimer:
-        raise HustleError(_("You cannot claim your own task."))
-
-    if task.status != Task.StatusChoices.OPEN:
-        raise AlreadyClaimedError(_("Someone else got there first. Keep hunting."))
-
-    if task.is_expired:
-        raise HustleError(_("This task has already expired."))
-
-    task.claimer = claimer
-    task.status = Task.StatusChoices.CLAIMED
-    task.save(update_fields=["claimer", "status", "updated_at"])
-
-    _bust_map_cache()
-    return task
 
 
 # ---------------------------------------------------------------------------
@@ -187,15 +201,19 @@ def complete_task(task_id: int, requesting_user) -> Task:
     task.save(update_fields=["status", "updated_at"])
 
     # Increment claimer's completed count
+    badge_awarded = False
     if task.claimer:
         from apps.accounts.models import User
+        old_badge = task.claimer.badge
         User.objects.filter(pk=task.claimer.pk).update(
             total_completed=task.claimer.total_completed + 1
         )
         task.claimer.refresh_from_db()
         task.claimer.auto_assign_badge()
+        if old_badge != task.claimer.badge:
+            badge_awarded = True
 
-    return task
+    return task, badge_awarded
 
 
 def submit_rating(task_id: int, rater, ratee, score: int, comment: str = "") -> Rating:

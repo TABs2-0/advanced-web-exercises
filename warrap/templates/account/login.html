@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n socialaccount %}
 
 {% block meta_title %}{% trans "Log in" %}{% endblock %}
 {% block meta_robots %}noindex, nofollow{% endblock %}
@@ -21,7 +21,7 @@
 
       {# ── Google OAuth ──────────────────────────────────────────────────── #}
       <div class="mb-6">
-        <a href="{% url 'google_login' %}"
+        <a href="{% provider_login_url 'google' process='login' %}"
            class="flex items-center justify-center gap-3 w-full
                   bg-white border border-ink/20 rounded-btn
                   px-4 py-3 text-sm font-medium text-ink

@@ -14,15 +14,15 @@ from .models import User, CityChoices
 
 
 INPUT_CLS = (
-    "w-full bg-white border border-ink/20 rounded-[20px] "
-    "px-4 py-3 text-ink text-sm placeholder:text-slate "
+    "w-full bg-white border border-ink/20 rounded-[16px] "
+    "px-4 py-3 text-ink text-base placeholder:text-slate "
     "focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink "
     "transition-all duration-200"
 )
 
 SELECT_CLS = (
-    "w-full bg-white border border-ink/20 rounded-[20px] "
-    "px-4 py-3 text-ink text-sm "
+    "w-full bg-white border border-ink/20 rounded-[16px] "
+    "px-4 py-3 text-ink text-base "
     "focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink "
     "transition-all duration-200"
 )

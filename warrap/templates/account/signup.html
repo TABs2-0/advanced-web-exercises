@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n socialaccount %}
 
 {% block meta_title %}{% trans "Join Warrap" %}{% endblock %}
 {% block meta_robots %}noindex, nofollow{% endblock %}
@@ -7,21 +7,20 @@
 
 {% block content %}
 <div class="min-h-[calc(100vh-6rem)] flex items-center justify-center px-4 py-12">
-  <div class="w-full max-w-lg">
-
+  <div class="w-full max-w-xl">
     <p class="ghost-headline text-center mb-[-1.5rem] select-none pointer-events-none">Join</p>
 
     <div class="card animate-slide-up">
-
       <div class="text-center mb-8">
         <p class="eyebrow justify-center mb-3">{% trans "Create account" %}</p>
         <h1 class="text-card-title font-medium text-ink">{% trans "Get on the map" %}</h1>
-        <p class="text-sm text-slate mt-2 font-body">{% trans "Takes 30 seconds. No CV required." %}</p>
+        <p class="text-sm text-slate mt-2 font-body">
+          {% trans "Step" %} <span id="current-step-num">1</span> {% trans "of 3. Keep it light." %}
+        </p>
       </div>
 
-      {# ── Google button ─────────────────────────────────────────────── #}
       <div class="mb-6">
-        <a href="{% url 'google_login' %}"
+        <a href="{% provider_login_url 'google' process='login' %}"
            class="flex items-center justify-center gap-3 w-full
                   bg-white border border-ink/20 rounded-btn
                   px-4 py-3 text-sm font-medium text-ink
@@ -38,58 +37,119 @@
 
       <div class="flex items-center gap-3 mb-6">
         <div class="flex-1 h-px bg-ink/10"></div>
-        <span class="text-xs text-slate">{% trans "or fill in the form" %}</span>
+        <span class="text-xs text-slate">{% trans "or build your profile" %}</span>
         <div class="flex-1 h-px bg-ink/10"></div>
       </div>
 
-      {# ── Signup form ─────────────────────────────────────────────────── #}
-      <form method="post" action="{% url 'account_signup' %}" class="flex flex-col gap-4" novalidate>
+      <div class="grid grid-cols-3 gap-2 mb-6" aria-hidden="true">
+        <div id="step-1-bar" class="h-1.5 rounded-full bg-ink"></div>
+        <div id="step-2-bar" class="h-1.5 rounded-full bg-ink/20"></div>
+        <div id="step-3-bar" class="h-1.5 rounded-full bg-ink/20"></div>
+      </div>
+
+      <form method="post" action="{% url 'account_signup' %}" class="flex flex-col gap-5" novalidate>
         {% csrf_token %}
 
         {% if form.non_field_errors %}
           <div class="toast-error px-4 py-3 rounded-btn border text-sm">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        {# Name row — rendered manually for the 2-col grid #}
-        <div class="grid grid-cols-2 gap-3">
-          <div class="flex flex-col gap-1.5">
-            <label for="{{ form.first_name.id_for_label }}" class="text-xs font-medium text-ink">
-              {{ form.first_name.label }}
-            </label>
-            {{ form.first_name }}
-            {% for e in form.first_name.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="{{ form.last_name.id_for_label }}" class="text-xs font-medium text-ink">
-              {{ form.last_name.label }}
-            </label>
-            {{ form.last_name }}
-            {% for e in form.last_name.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
-          </div>
-        </div>
-
-        {# Remaining fields in declaration order — skip first_name/last_name already rendered #}
-        {% for field in form %}
-          {% if field.name != "first_name" and field.name != "last_name" %}
+        <section class="form-step flex flex-col gap-4">
+          <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1.5">
-              <label for="{{ field.id_for_label }}" class="text-xs font-medium text-ink">
-                {{ field.label }}
-                {% if field.field.required %}<span class="text-signal ml-0.5">*</span>{% endif %}
-              </label>
-              {{ field }}
-              {% if field.help_text %}
-                <p class="text-[11px] text-slate">{{ field.help_text }}</p>
-              {% endif %}
-              {% for e in field.errors %}
-                <p class="text-xs text-red-600">{{ e }}</p>
-              {% endfor %}
+              <label for="{{ form.first_name.id_for_label }}" class="text-xs font-medium text-ink">{{ form.first_name.label }}</label>
+              {{ form.first_name }}
+              {% for e in form.first_name.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
             </div>
-          {% endif %}
-        {% endfor %}
+            <div class="flex flex-col gap-1.5">
+              <label for="{{ form.last_name.id_for_label }}" class="text-xs font-medium text-ink">{{ form.last_name.label }}</label>
+              {{ form.last_name }}
+              {% for e in form.last_name.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+            </div>
+          </div>
 
-        <button type="submit" class="btn-primary w-full justify-center py-3 mt-2">
-          {% trans "Join Warrap" %}
-        </button>
+          <div class="flex flex-col gap-1.5">
+            <label for="{{ form.username.id_for_label }}" class="text-xs font-medium text-ink">
+              {{ form.username.label }} <span class="text-signal ml-0.5">*</span>
+            </label>
+            {{ form.username }}
+            {% if form.username.help_text %}<p class="text-[11px] text-slate">{{ form.username.help_text }}</p>{% endif %}
+            {% for e in form.username.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+          </div>
+
+          <button type="button" class="btn-primary w-full justify-center py-3" onclick="goToStep(2)">
+            {% trans "Next" %}
+          </button>
+        </section>
+
+        <section class="form-step hidden flex flex-col gap-4">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1.5">
+              <label for="{{ form.email.id_for_label }}" class="text-xs font-medium text-ink">
+                {{ form.email.label }} <span class="text-signal ml-0.5">*</span>
+              </label>
+              {{ form.email }}
+              {% for e in form.email.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="{{ form.phone_number.id_for_label }}" class="text-xs font-medium text-ink">{{ form.phone_number.label }}</label>
+              {{ form.phone_number }}
+              {% if form.phone_number.help_text %}<p class="text-[11px] text-slate">{{ form.phone_number.help_text }}</p>{% endif %}
+              {% for e in form.phone_number.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="{{ form.city.id_for_label }}" class="text-xs font-medium text-ink">
+              {{ form.city.label }} <span class="text-signal ml-0.5">*</span>
+            </label>
+            {{ form.city }}
+            {% for e in form.city.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" class="btn-secondary justify-center py-3" onclick="goToStep(1)">{% trans "Back" %}</button>
+            <button type="button" class="btn-primary justify-center py-3" onclick="goToStep(3)">{% trans "Next" %}</button>
+          </div>
+        </section>
+
+        <section class="form-step hidden flex flex-col gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="{{ form.password1.id_for_label }}" class="text-xs font-medium text-ink">
+              {{ form.password1.label }} <span class="text-signal ml-0.5">*</span>
+            </label>
+            {{ form.password1 }}
+            {% if form.password1.help_text %}<p class="text-[11px] text-slate">{{ form.password1.help_text }}</p>{% endif %}
+            {% for e in form.password1.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="{{ form.password2.id_for_label }}" class="text-xs font-medium text-ink">
+              {{ form.password2.label }} <span class="text-signal ml-0.5">*</span>
+            </label>
+            {{ form.password2 }}
+            {% for e in form.password2.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+          </div>
+
+          {% for field in form %}
+            {% if field.name != "first_name" and field.name != "last_name" and field.name != "username" and field.name != "email" and field.name != "phone_number" and field.name != "city" and field.name != "password1" and field.name != "password2" %}
+              <div class="flex flex-col gap-1.5">
+                <label for="{{ field.id_for_label }}" class="text-xs font-medium text-ink">
+                  {{ field.label }}
+                  {% if field.field.required %}<span class="text-signal ml-0.5">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}<p class="text-[11px] text-slate">{{ field.help_text }}</p>{% endif %}
+                {% for e in field.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" class="btn-secondary justify-center py-3" onclick="goToStep(2)">{% trans "Back" %}</button>
+            <button type="submit" class="btn-primary justify-center py-3">{% trans "Join Warrap" %}</button>
+          </div>
+        </section>
       </form>
 
       <p class="text-center text-sm text-slate mt-6 font-body">
@@ -98,7 +158,6 @@
           {% trans "Log in" %}
         </a>
       </p>
-
     </div>
   </div>
 </div>

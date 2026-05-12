@@ -5,105 +5,241 @@
 
 {% block extra_head %}
 <style>
-  #pin-map { height: 300px; border-radius: 20px; overflow: hidden; }
+  body { background-color: #F3F0EE; }
+  #pin-map { height: 320px; border-radius: 26px; overflow: hidden; z-index: 10; }
+  .leaflet-control-attribution { display: none; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="section-container py-8 max-w-2xl">
+<div class="section-container py-8 max-w-3xl">
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <a href="{% url 'hustles:map' %}" class="flex items-center gap-2 text-slate hover:text-ink text-base font-medium transition">
+        <i class="ri-arrow-left-line text-lg"></i>
+        {% trans "Back to map" %}
+      </a>
+      <span class="text-base font-bold text-ink">Step <span id="current-step-num">1</span> of 4</span>
+    </div>
+    <div class="flex gap-2 mb-8" id="step-indicator">
+      <div class="h-1.5 flex-1 rounded-full bg-ink transition-colors duration-300" id="step-1-bar"></div>
+      <div class="h-1.5 flex-1 rounded-full bg-ink/20 transition-colors duration-300" id="step-2-bar"></div>
+      <div class="h-1.5 flex-1 rounded-full bg-ink/20 transition-colors duration-300" id="step-3-bar"></div>
+      <div class="h-1.5 flex-1 rounded-full bg-ink/20 transition-colors duration-300" id="step-4-bar"></div>
+    </div>
+  </div>
 
-  <p class="eyebrow mb-3">{% trans "New Hustle" %}</p>
-  <h1 class="text-[clamp(28px,4vw,42px)] font-medium leading-tight tracking-tight mb-2">
-    {% trans "Drop the job. We'll pin it." %}
-  </h1>
-  <p class="text-slate font-body mb-8">{% trans "Fill this in 30 seconds or less. No long form, we promise." %}</p>
-
-  <form method="post" class="flex flex-col gap-6" id="post-task-form" novalidate>
+  <form method="post" id="post-task-form" novalidate onsubmit="return validateForm()">
     {% csrf_token %}
+    {{ form.latitude }}
+    {{ form.longitude }}
 
-    <!-- Title -->
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-medium text-ink">{{ form.title.label }} <span class="text-signal">*</span></label>
-      {{ form.title }}
-      {% for e in form.title.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
-    </div>
+    <div class="form-step" id="step-1">
+      <h1 class="text-section font-medium tracking-tight mb-2">{% trans "What's the job?" %}</h1>
+      <p class="text-slate font-body mb-8">{% trans "Keep it clear and simple." %}</p>
 
-    <!-- Description -->
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-medium text-ink">{{ form.description.label }} <span class="text-signal">*</span></label>
-      {{ form.description }}
-      {% for e in form.description.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
-    </div>
+      <div class="flex flex-col gap-6">
+        <div>
+          <label class="block text-sm font-bold text-ink mb-2">{% trans "Title" %}</label>
+          <input type="text" name="title" id="id_title"
+                 class="w-full bg-transparent border-b-2 border-ink/20 focus:border-ink pb-2 text-3xl font-medium placeholder-slate/50 outline-none transition-colors"
+                 placeholder="{% trans 'e.g. Help me move a couch' %}"
+                 required value="{{ form.title.value|default_if_none:'' }}">
+          {% for e in form.title.errors %}<p class="text-sm text-red-600 mt-1">{{ e }}</p>{% endfor %}
+        </div>
 
-    <!-- Category + Pay row -->
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-ink">{{ form.category.label }}</label>
-        {{ form.category }}
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-sm font-bold text-ink">{% trans "Details" %}</label>
+            <span class="text-sm text-slate" id="desc-count">280 left</span>
+          </div>
+          <textarea name="description" id="id_description" rows="4" maxlength="280"
+                    class="w-full bg-white border border-ink/10 rounded-hero p-4 text-base focus:border-ink focus:ring-1 focus:ring-ink outline-none transition-shadow shadow-sm resize-none"
+                    placeholder="{% trans 'What exactly needs to be done?' %}" required>{{ form.description.value|default_if_none:'' }}</textarea>
+          {% for e in form.description.errors %}<p class="text-sm text-red-600 mt-1">{{ e }}</p>{% endfor %}
+        </div>
       </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-ink">{{ form.pay.label }} <span class="text-signal">*</span></label>
-        {{ form.pay }}
-        {% for e in form.pay.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
-      </div>
-    </div>
 
-    <!-- People + Neighborhood row -->
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-ink">{{ form.required_people.label }}</label>
-        {{ form.required_people }}
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-ink">{{ form.neighborhood.label }}</label>
-        {{ form.neighborhood }}
+      <div class="mt-8 flex justify-end">
+        <button type="button" onclick="goNext(2)" class="btn-primary">
+          Next <i class="ri-arrow-right-line"></i>
+        </button>
       </div>
     </div>
 
-    <!-- Expiry + Flash-gig -->
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs font-medium text-ink">{{ form.hours_until_expiry.label }}</label>
-        {{ form.hours_until_expiry }}
+    <div class="form-step hidden" id="step-2">
+      <h1 class="text-section font-medium tracking-tight mb-2">{% trans "Category & Pay" %}</h1>
+      <p class="text-slate font-body mb-8">{% trans "How are you rewarding the hustle?" %}</p>
+
+      <div class="flex flex-col gap-8">
+        <div>
+          <label class="block text-sm font-bold text-ink mb-3">{% trans "Category" %}</label>
+          <input type="hidden" name="category" id="id_category" value="{{ form.category.value|default_if_none:'physical' }}">
+          <div class="grid grid-cols-2 gap-3" id="category-grid">
+            <button type="button" class="category-tile p-4 rounded-hero border-2 border-ink/10 text-left transition-all duration-200 hover:border-ink/40" data-category="digital" onclick="selectCategory('digital', this)">
+              <i class="ri-macbook-line text-2xl block mb-2"></i><span class="font-medium">Digital</span>
+            </button>
+            <button type="button" class="category-tile p-4 rounded-hero border-2 border-ink/10 text-left transition-all duration-200 hover:border-ink/40" data-category="physical" onclick="selectCategory('physical', this)">
+              <i class="ri-hand-heart-line text-2xl block mb-2"></i><span class="font-medium">Physical</span>
+            </button>
+            <button type="button" class="category-tile p-4 rounded-hero border-2 border-ink/10 text-left transition-all duration-200 hover:border-ink/40" data-category="delivery" onclick="selectCategory('delivery', this)">
+              <i class="ri-riding-line text-2xl block mb-2"></i><span class="font-medium">Delivery</span>
+            </button>
+            <button type="button" class="category-tile p-4 rounded-hero border-2 border-ink/10 text-left transition-all duration-200 hover:border-ink/40" data-category="event" onclick="selectCategory('event', this)">
+              <i class="ri-calendar-event-line text-2xl block mb-2"></i><span class="font-medium">Event</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-ink mb-2">{% trans "Pay (XAF)" %}</label>
+          <div class="relative">
+            <input type="number" name="pay" id="id_pay" min="0" step="500"
+                   class="w-full bg-white border border-ink/10 rounded-hero p-4 pl-14 text-2xl font-medium focus:border-ink focus:ring-1 focus:ring-ink outline-none transition-shadow shadow-sm"
+                   placeholder="2500" required value="{{ form.pay.value|default_if_none:'' }}">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate font-bold">XAF</span>
+          </div>
+          {% for e in form.pay.errors %}<p class="text-sm text-red-600 mt-1">{{ e }}</p>{% endfor %}
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-ink mb-3">{% trans "People needed" %}</label>
+          <div class="flex items-center gap-4 bg-white border border-ink/10 p-2 rounded-btn w-fit shadow-sm">
+            <button type="button" onclick="adjustPeople(-1)" class="w-10 h-10 rounded-btn bg-canvas flex items-center justify-center hover:bg-slate/20 transition-colors"><i class="ri-subtract-line"></i></button>
+            <span id="people-display" class="text-xl font-medium w-8 text-center">{{ form.required_people.value|default_if_none:'1' }}</span>
+            <button type="button" onclick="adjustPeople(1)" class="w-10 h-10 rounded-btn bg-ink text-canvas flex items-center justify-center hover:bg-charcoal transition-colors"><i class="ri-add-line"></i></button>
+            <input type="hidden" id="id_required_people" name="required_people" value="{{ form.required_people.value|default_if_none:'1' }}">
+          </div>
+        </div>
       </div>
-      <div class="flex items-center gap-3 pt-6">
-        {{ form.is_flash_gig }}
-        <label class="text-xs font-medium text-ink cursor-pointer">{{ form.is_flash_gig.label }}</label>
+
+      <div class="mt-8 flex justify-between">
+        <button type="button" onclick="goToStep(1)" class="btn-secondary"><i class="ri-arrow-left-line"></i> Back</button>
+        <button type="button" onclick="goNext(3)" class="btn-primary">Next <i class="ri-arrow-right-line"></i></button>
       </div>
     </div>
 
-    <!-- Map pin selector -->
-    <div class="flex flex-col gap-2">
-      <label class="text-xs font-medium text-ink">
-        {% trans "Pin your location" %} <span class="text-signal">*</span>
-      </label>
-      <p class="text-[11px] text-slate">{% trans "Click the map to drop your task pin. Only an approximate location is shown publicly." %}</p>
-      <div id="pin-map" class="border border-ink/10 shadow-card"></div>
-      <div id="pin-coords-display" class="text-[11px] text-slate hidden">
-        {% trans "Pin set at" %}: <span id="pin-lat-display"></span>, <span id="pin-lng-display"></span>
+    <div class="form-step hidden" id="step-3">
+      <h1 class="text-section font-medium tracking-tight mb-2">{% trans "Where is it?" %}</h1>
+      <p class="text-slate font-body mb-8">{% trans "Drop a pin so locals can find you." %}</p>
+
+      <div class="flex flex-col gap-6">
+        <div class="relative">
+          <div id="pin-map" class="shadow-sm border border-ink/10"></div>
+          <div class="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur shadow-sm rounded-btn px-4 py-2 text-sm font-bold text-ink border border-ink/5">
+            <i class="ri-map-pin-line"></i> Click map to pin
+          </div>
+          <button type="button" onclick="useMyLocation()"
+                  class="absolute bottom-4 left-4 z-[400] bg-ink text-canvas shadow-card rounded-btn px-4 py-2 text-sm font-medium hover:bg-charcoal transition-colors">
+            <i class="ri-crosshair-2-line"></i> Use my location
+          </button>
+        </div>
+        {% for e in form.latitude.errors %}<p class="text-sm text-red-600">{{ e }}</p>{% endfor %}
+
+        <div>
+          <label class="block text-sm font-bold text-ink mb-2">{% trans "Neighborhood (optional)" %}</label>
+          <input type="text" name="neighborhood" id="id_neighborhood"
+                 class="w-full bg-white border border-ink/10 rounded-hero p-4 text-base focus:border-ink focus:ring-1 focus:ring-ink outline-none transition-shadow shadow-sm"
+                 placeholder="{% trans 'e.g. Bastos, Bonamoussadi' %}" value="{{ form.neighborhood.value|default_if_none:'' }}">
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-ink mb-3">{% trans "Expires in" %}</label>
+          <input type="hidden" name="hours_until_expiry" id="id_hours_until_expiry" value="{{ form.hours_until_expiry.value|default_if_none:'24' }}">
+          <div class="flex gap-2">
+            <button type="button" class="expiry-chip flex-1 py-2 px-4 rounded-btn border border-ink/10 text-sm font-medium hover:border-ink/40 transition text-center" data-hours="2" onclick="selectExpiry(2, this)">2h</button>
+            <button type="button" class="expiry-chip flex-1 py-2 px-4 rounded-btn border border-ink/10 text-sm font-medium hover:border-ink/40 transition text-center" data-hours="6" onclick="selectExpiry(6, this)">6h</button>
+            <button type="button" class="expiry-chip flex-1 py-2 px-4 rounded-btn border border-ink/10 text-sm font-medium hover:border-ink/40 transition text-center active-chip" data-hours="24" onclick="selectExpiry(24, this)">24h</button>
+          </div>
+        </div>
+
+        <label class="flex items-center justify-between p-4 rounded-hero bg-white shadow-sm border border-ink/10 cursor-pointer hover:border-signal/30 transition-all duration-200 mt-2" id="flash-label">
+          <div>
+            <p class="font-bold text-ink flex items-center gap-2"><i class="ri-flashlight-line text-signal"></i> Flash-Gig</p>
+            <p class="text-sm text-slate mt-0.5 max-w-[240px]">Expires in 15 mins. Alerts nearby users instantly.</p>
+          </div>
+          <div class="relative w-12 h-6 flex-shrink-0">
+            <input type="checkbox" id="id_is_flash_gig" name="is_flash_gig" class="sr-only peer" {% if form.is_flash_gig.value %}checked{% endif %}>
+            <div class="w-12 h-6 rounded-full bg-ink/20 peer-checked:bg-signal transition-colors duration-200"></div>
+            <div class="absolute top-0.5 left-0.5 w-5 h-5 rounded-circle bg-white shadow transition-transform duration-200 peer-checked:translate-x-6"></div>
+          </div>
+        </label>
       </div>
-      {{ form.latitude }}
-      {{ form.longitude }}
-      {% for e in form.latitude.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
-      {% for e in form.non_field_errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+
+      <div class="mt-8 flex justify-between">
+        <button type="button" onclick="goToStep(2)" class="btn-secondary"><i class="ri-arrow-left-line"></i> Back</button>
+        <button type="button" onclick="prepareReview()" class="btn-primary">Review <i class="ri-file-list-3-line"></i></button>
+      </div>
     </div>
 
-    <!-- Submit -->
-    <div class="flex gap-3">
-      <button type="submit" class="btn-primary flex-1 justify-center py-3">
-        {% include "components/icons/pin.html" with size=16 %}
-        {% trans "Post this Hustle" %}
-      </button>
-      <a href="{% url 'hustles:map' %}" class="btn-secondary px-6 py-3">{% trans "Cancel" %}</a>
-    </div>
+    <div class="form-step hidden" id="step-4">
+      <h1 class="text-[clamp(32px,5vw,48px)] font-medium tracking-tight mb-8">{% trans "Ready to drop it?" %}</h1>
 
+      <div class="bg-white rounded-hero p-6 shadow-card mb-8 border border-ink/5">
+        <div class="flex justify-between items-start mb-6">
+          <div class="flex items-center gap-2">
+            <span id="review-icon" class="text-3xl bg-canvas p-2 rounded-btn text-signal"><i class="ri-hand-heart-line"></i></span>
+            <span id="review-flash" class="hidden text-xs font-bold text-signal animate-pulse"><i class="ri-flashlight-line"></i> FLASH</span>
+          </div>
+          <p class="text-2xl font-medium text-ink" id="review-pay">0 XAF</p>
+        </div>
+
+        <h3 class="text-xl font-medium text-ink mb-1" id="review-title">Task Title</h3>
+        <p class="text-base text-slate mb-4 pb-4 border-b border-ink/5" id="review-desc">Description</p>
+
+        <div class="flex flex-col gap-3">
+          <div class="flex justify-between items-center text-base">
+            <span class="text-slate">People needed</span>
+            <span class="font-medium text-ink flex items-center gap-1"><span id="review-people">1</span> <i class="ri-user-line"></i></span>
+          </div>
+          <div class="flex justify-between items-center text-base">
+            <span class="text-slate">Location</span>
+            <span class="font-medium text-ink" id="review-loc">Pinned location</span>
+          </div>
+          <div class="flex justify-between items-center text-base">
+            <span class="text-slate">Expires</span>
+            <span class="font-medium text-ink" id="review-exp">24h</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 flex flex-col gap-4">
+        <button type="submit" class="w-full btn-primary text-lg py-4 justify-center shadow-dramatic hover:bg-signal hover:border-signal">
+          <i class="ri-map-pin-add-line"></i> {% trans "Post this Hustle" %}
+        </button>
+        <button type="button" onclick="goToStep(3)" class="text-slate font-medium py-2 hover:text-ink transition">
+          <i class="ri-arrow-left-line"></i> Edit details
+        </button>
+      </div>
+    </div>
   </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  // Embedded pin-drop map
+let dropPinOnPostMap = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const desc = document.getElementById('id_description');
+  const count = document.getElementById('desc-count');
+  if(desc && count) {
+    const updateCount = () => { count.textContent = `${280 - desc.value.length} left`; };
+    desc.addEventListener('input', updateCount);
+    updateCount();
+  }
+
+  const curCat = document.getElementById('id_category').value || 'physical';
+  const catTile = document.querySelector(`.category-tile[data-category="${curCat}"]`);
+  if(catTile) selectCategory(curCat, catTile);
+
+  document.querySelectorAll('.expiry-chip').forEach(c => {
+    if(c.dataset.hours === document.getElementById('id_hours_until_expiry').value) {
+      c.classList.add('bg-ink', 'text-white');
+      c.classList.remove('border-ink/10');
+    }
+  });
+
   const pinMap = L.map('pin-map').setView([3.848, 11.502], 14);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(pinMap);
 
@@ -111,29 +247,131 @@
   const latInput = document.getElementById('id_latitude');
   const lngInput = document.getElementById('id_longitude');
 
-  // Try to use real location
-  if (navigator.geolocation) {
+  dropPinOnPostMap = function(lat, lng, zoom = 16) {
+    if (pinMarker) pinMarker.remove();
+    pinMarker = L.marker([lat, lng], {
+      icon: L.divIcon({
+        html: `<div class="w-6 h-6 rounded-btn bg-signal border-[3px] border-white shadow-dramatic flex items-center justify-center text-white"><i class="ri-map-pin-fill text-xs"></i></div>`,
+        iconSize: [24, 24], iconAnchor: [12, 12], className: ''
+      })
+    }).addTo(pinMap);
+    latInput.value = lat.toFixed(6);
+    lngInput.value = lng.toFixed(6);
+    pinMap.flyTo([lat, lng], zoom, { duration: 0.5 });
+  };
+
+  if (latInput.value && lngInput.value) {
+    dropPinOnPostMap(parseFloat(latInput.value), parseFloat(lngInput.value));
+  } else if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
       pinMap.setView([pos.coords.latitude, pos.coords.longitude], 16);
     });
   }
 
   pinMap.on('click', e => {
-    const { lat, lng } = e.latlng;
-    if (pinMarker) pinMarker.remove();
-    pinMarker = L.marker([lat, lng], {
-      icon: L.divIcon({
-        html: `<div class="w-4 h-4 rounded-full bg-signal border-2 border-white shadow-card"></div>`,
-        iconSize: [16, 16], iconAnchor: [8, 8], className: ''
-      })
-    }).addTo(pinMap);
-
-    latInput.value = lat.toFixed(6);
-    lngInput.value = lng.toFixed(6);
-
-    document.getElementById('pin-lat-display').textContent = lat.toFixed(4);
-    document.getElementById('pin-lng-display').textContent = lng.toFixed(4);
-    document.getElementById('pin-coords-display').classList.remove('hidden');
+    dropPinOnPostMap(e.latlng.lat, e.latlng.lng, pinMap.getZoom());
   });
+
+  window.refreshMap = function() {
+    setTimeout(() => { pinMap.invalidateSize(); }, 50);
+  };
+});
+
+function useMyLocation() {
+  if (!navigator.geolocation) {
+    alert("Your browser does not support location.");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos => {
+    dropPinOnPostMap(pos.coords.latitude, pos.coords.longitude, 17);
+  }, () => alert("We could not access your location."));
+}
+
+function selectCategory(cat, el) {
+  document.getElementById('id_category').value = cat;
+  document.querySelectorAll('.category-tile').forEach(t => {
+    t.classList.remove('bg-ink', 'text-canvas', 'border-ink');
+    t.classList.add('border-ink/10');
+  });
+  el.classList.add('bg-ink', 'text-canvas', 'border-ink');
+  el.classList.remove('border-ink/10');
+}
+
+function selectExpiry(hours, el) {
+  document.getElementById('id_hours_until_expiry').value = hours;
+  document.querySelectorAll('.expiry-chip').forEach(c => {
+    c.classList.remove('bg-ink', 'text-white');
+    c.classList.add('border-ink/10');
+  });
+  el.classList.add('bg-ink', 'text-white');
+  el.classList.remove('border-ink/10');
+}
+
+function adjustPeople(delta) {
+  const input = document.getElementById('id_required_people');
+  const display = document.getElementById('people-display');
+  let val = parseInt(input.value) + delta;
+  if(val < 1) val = 1;
+  if(val > 10) val = 10;
+  input.value = val;
+  display.textContent = val;
+}
+
+function goNext(step) {
+  if (step === 2) {
+    if(!document.getElementById('id_title').value) { alert("Title is required"); document.getElementById('id_title').focus(); return; }
+    if(!document.getElementById('id_description').value) { alert("Details required"); document.getElementById('id_description').focus(); return; }
+  }
+  if (step === 3) {
+    if(!document.getElementById('id_pay').value) { alert("Pay is required"); document.getElementById('id_pay').focus(); return; }
+    window.refreshMap();
+  }
+  goToStep(step);
+}
+
+function prepareReview() {
+  if(!document.getElementById('id_latitude').value) {
+    alert("Please drop a pin on the map.");
+    return;
+  }
+
+  const title = document.getElementById('id_title').value;
+  const desc = document.getElementById('id_description').value;
+  const pay = document.getElementById('id_pay').value;
+  const people = document.getElementById('id_required_people').value;
+  const neighb = document.getElementById('id_neighborhood').value || 'Pinned location';
+  const cat = document.getElementById('id_category').value;
+  const exp = document.getElementById('id_hours_until_expiry').value;
+  const flash = document.getElementById('id_is_flash_gig').checked;
+
+  document.getElementById('review-title').textContent = title;
+  document.getElementById('review-desc').textContent = desc;
+  document.getElementById('review-pay').textContent = pay + " XAF";
+  document.getElementById('review-people').textContent = people;
+  document.getElementById('review-loc').textContent = neighb;
+  document.getElementById('review-exp').textContent = flash ? '15 minutes' : exp + 'h';
+
+  const icon = {
+    digital: 'ri-macbook-line',
+    physical: 'ri-hand-heart-line',
+    delivery: 'ri-riding-line',
+    event: 'ri-calendar-event-line',
+    other: 'ri-map-pin-line'
+  }[cat] || 'ri-map-pin-line';
+  document.getElementById('review-icon').innerHTML = `<i class="${icon}"></i>`;
+
+  const flashEl = document.getElementById('review-flash');
+  if(flash) flashEl.classList.remove('hidden'); else flashEl.classList.add('hidden');
+  goToStep(4);
+}
+
+function validateForm() {
+  if(!document.getElementById('id_latitude').value) {
+    alert("Please drop a pin on the map.");
+    goToStep(3);
+    return false;
+  }
+  return true;
+}
 </script>
 {% endblock %}

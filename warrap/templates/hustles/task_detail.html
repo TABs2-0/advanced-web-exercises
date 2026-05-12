@@ -4,135 +4,195 @@
 {% block title %}{{ task.title }}{% endblock %}
 
 {% block content %}
-<div class="section-container py-8 max-w-2xl">
-
-  <!-- Back -->
-  <a href="{% url 'hustles:map' %}" class="inline-flex items-center gap-2 text-sm text-slate hover:text-ink transition-colors mb-6">
-    {% include "components/icons/arrow-left.html" with size=14 %}
+<div class="section-container py-8 lg:py-12">
+  <a href="{% url 'hustles:map' %}" class="inline-flex items-center gap-2 text-base text-slate hover:text-ink transition-colors mb-6">
+    <i class="ri-arrow-left-line text-lg"></i>
     {% trans "Back to map" %}
   </a>
 
-  <div class="card animate-slide-up">
+  <div class="grid lg:grid-cols-[1.25fr_0.75fr] gap-6 items-start">
+    <article class="card overflow-hidden relative">
+      <div class="absolute right-0 top-0 h-40 w-40 bg-signal/10 rounded-bl-[80px]"></div>
 
-    <!-- Status + category row -->
-    <div class="flex items-center gap-2 mb-4 flex-wrap">
-      <span class="category-pill">{{ task.get_category_display }}</span>
-      <span class="category-pill status-{{ task.status }}">{{ task.get_status_display }}</span>
-      {% if task.is_flash_gig %}
-        <span class="category-pill bg-amber-50 text-amber-700 border-amber-200 animate-pulse-pin">
-          ⚡ {% trans "Flash-Gig" %}
-        </span>
-      {% endif %}
-    </div>
+      <div class="relative">
+        <div class="flex flex-wrap items-center gap-2 mb-6">
+          <span class="category-pill"><i class="ri-price-tag-3-line"></i>{{ task.get_category_display }}</span>
+          <span class="category-pill status-{{ task.status }}"><i class="ri-checkbox-circle-line"></i>{{ task.get_status_display }}</span>
+          {% if task.is_flash_gig %}
+            <span class="category-pill bg-orange-50 text-signal border-signal/20">
+              <i class="ri-flashlight-line"></i>{% trans "Flash gig" %}
+            </span>
+            {% if task.is_open %}
+              <span data-expires="{{ task.expires_at.isoformat }}" class="text-sm font-medium text-signal"></span>
+            {% endif %}
+          {% endif %}
+        </div>
 
-    <!-- Title + pay -->
-    <div class="flex items-start justify-between gap-4 mb-4">
-      <h1 class="text-card-title font-medium text-ink leading-snug">{{ task.title }}</h1>
-      <div class="flex-shrink-0 text-right">
-        <p class="text-2xl font-medium text-ink">{{ task.pay_display }}</p>
-        {% if task.required_people > 1 %}
-          <p class="text-xs text-slate mt-0.5">{{ task.required_people }} {% trans "people needed" %}</p>
+        <div class="grid md:grid-cols-[1fr_auto] gap-6 border-b border-ink/10 pb-6">
+          <div>
+            <p class="eyebrow text-slate mb-3">{% trans "Gig details" %}</p>
+            <h1 class="text-[clamp(34px,5vw,58px)] leading-[1.02] font-medium tracking-tight text-ink">
+              {{ task.title }}
+            </h1>
+          </div>
+          <div class="bg-ink text-canvas rounded-hero p-5 min-w-48 h-fit shadow-card">
+            <p class="text-sm text-canvas/60 mb-1">{% trans "Reward" %}</p>
+            <p class="text-3xl font-medium">{{ task.pay_display }}</p>
+            {% if task.required_people > 1 %}
+              <p class="text-sm text-canvas/70 mt-2">
+                <i class="ri-team-line"></i> {{ task.required_people }} {% trans "people needed" %}
+              </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="py-6">
+          <p class="text-lg font-body text-charcoal leading-relaxed">{{ task.description }}</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="bg-canvas rounded-hero p-4 border border-ink/5">
+            <i class="ri-user-smile-line text-2xl text-signal"></i>
+            <p class="text-xs uppercase tracking-wide text-slate font-bold mt-3 mb-1">{% trans "Posted by" %}</p>
+            <a href="{% url 'accounts:profile' task.poster.username %}" class="font-medium text-ink hover:text-signal">@{{ task.poster.username }}</a>
+          </div>
+          <div class="bg-canvas rounded-hero p-4 border border-ink/5">
+            <i class="ri-map-pin-line text-2xl text-link"></i>
+            <p class="text-xs uppercase tracking-wide text-slate font-bold mt-3 mb-1">{% trans "Area" %}</p>
+            <p class="font-medium text-ink">{{ task.neighborhood|default:"Nearby" }}</p>
+          </div>
+          <div class="bg-canvas rounded-hero p-4 border border-ink/5">
+            <i class="ri-time-line text-2xl text-clay"></i>
+            <p class="text-xs uppercase tracking-wide text-slate font-bold mt-3 mb-1">{% trans "Posted" %}</p>
+            <p class="font-medium text-ink">{{ task.created_at|naturaltime }}</p>
+          </div>
+          <div class="bg-canvas rounded-hero p-4 border border-ink/5">
+            <i class="ri-hourglass-line text-2xl text-signal"></i>
+            <p class="text-xs uppercase tracking-wide text-slate font-bold mt-3 mb-1">{% trans "Expires" %}</p>
+            <p class="font-medium {% if task.is_expired %}text-red-600{% else %}text-ink{% endif %}">{{ task.expires_at|naturaltime }}</p>
+          </div>
+        </div>
+
+        {% if reveal_location %}
+          <div class="mt-6 bg-lifted border border-ink/10 rounded-hero p-5">
+            <div class="flex items-start gap-4">
+              <div class="w-11 h-11 rounded-btn bg-white border border-ink/10 flex items-center justify-center text-signal text-xl">
+                <i class="ri-map-pin-2-line"></i>
+              </div>
+              <div class="flex-1">
+                <p class="font-medium text-ink">{% trans "Exact location unlocked" %}</p>
+                <p class="text-slate mt-1">{{ task.location.y|floatformat:4 }}, {{ task.location.x|floatformat:4 }}</p>
+                {% if is_poster and task.claimer and task.claimer.phone_number %}
+                  <a href="{{ task.whatsapp_link }}" target="_blank"
+                     class="btn-primary mt-4 bg-[#25D366] border-[#25D366] hover:bg-[#1ebe5d] hover:border-[#1ebe5d]">
+                    <i class="ri-whatsapp-line"></i>
+                    {% trans "Message on WhatsApp" %}
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
         {% endif %}
       </div>
-    </div>
+    </article>
 
-    <!-- Description -->
-    <p class="text-sm font-body text-charcoal leading-relaxed mb-6">{{ task.description }}</p>
+    <aside class="space-y-4">
+      <div class="card">
+        <p class="eyebrow text-slate mb-4">{% trans "Take action" %}</p>
 
-    <!-- Meta grid -->
-    <div class="grid grid-cols-2 gap-3 bg-canvas rounded-hero p-4 mb-6">
-      <div>
-        <p class="text-[10px] uppercase tracking-wider text-slate font-bold mb-0.5">{% trans "Posted by" %}</p>
-        <a href="{% url 'accounts:profile' task.poster.username %}"
-           class="text-sm font-medium text-ink hover:text-signal transition-colors">
-          @{{ task.poster.username }}
-        </a>
-      </div>
-      <div>
-        <p class="text-[10px] uppercase tracking-wider text-slate font-bold mb-0.5">{% trans "Neighborhood" %}</p>
-        <p class="text-sm text-ink">{{ task.neighborhood|default:"—" }}</p>
-      </div>
-      <div>
-        <p class="text-[10px] uppercase tracking-wider text-slate font-bold mb-0.5">{% trans "Posted" %}</p>
-        <p class="text-sm text-ink">{{ task.created_at|naturaltime }}</p>
-      </div>
-      <div>
-        <p class="text-[10px] uppercase tracking-wider text-slate font-bold mb-0.5">{% trans "Expires" %}</p>
-        <p class="text-sm {% if task.is_expired %}text-red-600{% else %}text-ink{% endif %}">
-          {{ task.expires_at|naturaltime }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Location reveal (only after claim) -->
-    {% if reveal_location %}
-      <div class="bg-lifted border border-ink/5 rounded-hero p-4 mb-6">
-        <p class="eyebrow text-xs mb-2">{% trans "Exact Location" %}</p>
-        <p class="text-sm text-ink font-medium">
-          {{ task.location.y|floatformat:4 }}, {{ task.location.x|floatformat:4 }}
-        </p>
-        {% if task.claimer and task.claimer.phone_number %}
-          <a href="{{ task.whatsapp_link }}" target="_blank"
-             class="btn-primary mt-3 text-xs inline-flex items-center gap-2 bg-[#25D366] border-[#25D366] hover:bg-[#1ebe5d] hover:border-[#1ebe5d]">
-            {% include "components/icons/whatsapp.html" with size=14 %}
-            {% trans "Message on WhatsApp" %}
-          </a>
+        {% if task.is_open and not is_poster %}
+          {% if user.is_authenticated %}
+            <form method="post" action="{% url 'hustles:claim_task' task.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-primary w-full justify-center text-base">
+                <i class="ri-lock-line"></i>
+                {% trans "Lock this hustle" %}
+              </button>
+            </form>
+          {% else %}
+            <a href="{% url 'account_login' %}" class="btn-primary w-full justify-center">
+              <i class="ri-login-circle-line"></i>
+              {% trans "Log in to claim" %}
+            </a>
+          {% endif %}
+        {% elif is_poster %}
+          <div class="bg-canvas border border-ink/10 rounded-hero p-4 text-slate">
+            <i class="ri-megaphone-line text-xl text-ink"></i>
+            <p class="mt-2">{% trans "This is your gig. Watch this page for claims and updates." %}</p>
+          </div>
+        {% else %}
+          <div class="bg-canvas border border-ink/10 rounded-hero p-4 text-slate">
+            <i class="ri-information-line text-xl text-ink"></i>
+            <p class="mt-2">{% trans "This gig is no longer open for claiming." %}</p>
+          </div>
         {% endif %}
-      </div>
-    {% endif %}
 
-    <!-- Actions -->
-    <div class="flex flex-col sm:flex-row gap-3">
-
-      {% if task.is_open and not is_poster %}
-        {% if user.is_authenticated %}
-          <form method="post" action="{% url 'hustles:claim_task' task.pk %}">
+        {% if task.status == 'claimed' and user.is_authenticated and is_party %}
+          <form method="post" action="{% url 'hustles:complete_task' task.pk %}" class="mt-3">
             {% csrf_token %}
-            <button type="submit" class="btn-primary w-full sm:w-auto py-3 px-8">
-              {% trans "Lock this Hustle" %} →
+            <button type="submit" class="btn-secondary w-full justify-center">
+              <i class="ri-check-double-line"></i>
+              {% trans "Mark as complete" %}
             </button>
           </form>
-        {% else %}
-          <a href="{% url 'account_login' %}" class="btn-primary text-sm py-3 px-8">
-            {% trans "Log in to claim" %}
+        {% endif %}
+
+        {% if task.status == 'completed' and user.is_authenticated %}
+          <a href="{% url 'hustles:rate_task' task.pk %}" class="btn-secondary w-full justify-center mt-3">
+            <i class="ri-star-line"></i>
+            {% trans "Leave a rating" %}
           </a>
         {% endif %}
-      {% endif %}
+      </div>
 
-      {% if task.status == 'claimed' and user.is_authenticated and is_party %}
-        <form method="post" action="{% url 'hustles:complete_task' task.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn-secondary py-3 px-6 text-sm">
-            {% trans "Mark as Complete" %}
-          </button>
-        </form>
-      {% endif %}
-
-      {% if task.status == 'completed' and user.is_authenticated %}
-        <a href="{% url 'hustles:rate_task' task.pk %}" class="btn-secondary py-3 px-6 text-sm">
-          {% trans "Leave a Rating" %}
+      <div class="card">
+        <div class="flex items-center gap-4">
+          <img src="{{ task.poster.avatar_url }}" alt="{{ task.poster.display_name }}" class="w-14 h-14 rounded-btn object-cover" />
+          <div class="min-w-0">
+            <p class="font-medium text-ink truncate">{{ task.poster.display_name }}</p>
+            <p class="text-slate">@{{ task.poster.username }}</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-5">
+          <div class="rounded-btn bg-canvas p-3 text-center">
+            <p class="font-medium text-ink">{{ task.poster.cred_display }}</p>
+            <p class="text-xs text-slate">{% trans "Cred" %}</p>
+          </div>
+          <div class="rounded-btn bg-canvas p-3 text-center">
+            <p class="font-medium text-ink">{{ task.poster.total_completed }}</p>
+            <p class="text-xs text-slate">{% trans "Done" %}</p>
+          </div>
+          <div class="rounded-btn bg-canvas p-3 text-center">
+            <p class="font-medium text-ink">{{ task.poster.vouch_count }}</p>
+            <p class="text-xs text-slate">{% trans "Vouch" %}</p>
+          </div>
+        </div>
+        <a href="{% url 'accounts:profile' task.poster.username %}" class="btn-secondary w-full justify-center mt-4">
+          <i class="ri-user-line"></i>
+          {% trans "View profile" %}
         </a>
-      {% endif %}
-
-    </div>
-
+      </div>
+    </aside>
   </div>
 
-  <!-- Poster profile snippet -->
-  <div class="mt-4 flex items-center gap-4 p-4 bg-white rounded-hero border border-ink/5">
-    <img src="{{ task.poster.avatar_url }}" alt="{{ task.poster.display_name }}"
-         class="w-12 h-12 rounded-circle object-cover" />
-    <div class="flex-1 min-w-0">
-      <p class="text-sm font-medium text-ink truncate">{{ task.poster.display_name }}</p>
-      <p class="text-xs text-slate">
-        ★ {{ task.poster.cred_display }} · {{ task.poster.total_completed }} {% trans "completed" %}
-        {% if task.poster.badge %}
-          · <span class="text-signal-light">{{ task.poster.get_badge_display }}</span>
-        {% endif %}
-      </p>
-    </div>
-    <a href="{% url 'accounts:profile' task.poster.username %}" class="btn-satellite w-9 h-9 text-sm">→</a>
-  </div>
-
+  {% if suggested_tasks %}
+    <section class="mt-10">
+      <div class="flex items-end justify-between gap-4 mb-4">
+        <div>
+          <p class="eyebrow text-slate mb-2">{% trans "Keep exploring" %}</p>
+          <h2 class="text-3xl font-medium tracking-tight text-ink">{% trans "Suggested gigs" %}</h2>
+        </div>
+        <a href="{% url 'hustles:map' %}" class="btn-secondary hidden sm:inline-flex">
+          <i class="ri-map-2-line"></i>
+          {% trans "Open map" %}
+        </a>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for suggested in suggested_tasks %}
+          {% include "partials/task_card.html" with task=suggested %}
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
 </div>
 {% endblock %}

@@ -10,6 +10,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 
@@ -22,6 +24,14 @@ from . import services
 # Main map
 # ---------------------------------------------------------------------------
 
+def root_view(request):
+    """Route to map if logged in, landing page if not."""
+    if request.user.is_authenticated:
+        return redirect("hustles:map")
+    return render(request, "hustles/landing.html", {
+        "categories": TaskCategoryChoices.choices,
+    })
+
 def map_view(request):
     """
     The homepage — a Leaflet map with task pins.
@@ -30,12 +40,10 @@ def map_view(request):
     categories = TaskCategoryChoices.choices
     return render(request, "hustles/map.html", {
         "categories": categories,
-        "default_city_coords": {
-            "yaounde": [3.848, 11.502],
-            "douala": [4.061, 9.739],
-            "buea": [4.156, 9.243],
-            "bamenda": [5.959, 10.146],
-        },
+        "default_city_coords": {"lat": 3.848, "lng": 11.502},
+        "task_detail_url_template": request.build_absolute_uri(
+            reverse("hustles:task_detail", kwargs={"pk": 0})
+        ).replace("/0/", "/{id}/"),
     })
 
 
@@ -79,12 +87,22 @@ def task_detail_view(request, pk: int):
     task = get_object_or_404(Task, pk=pk)
     is_party = request.user.is_authenticated and request.user in (task.poster, task.claimer)
     reveal_location = is_party and task.status in (Task.StatusChoices.CLAIMED, Task.StatusChoices.COMPLETED)
+    suggested_tasks = (
+        Task.objects.filter(
+            status=Task.StatusChoices.OPEN,
+            expires_at__gt=timezone.now(),
+        )
+        .exclude(pk=task.pk)
+        .select_related("poster")
+        .order_by("-is_flash_gig", "-created_at")[:6]
+    )
 
     return render(request, "hustles/task_detail.html", {
         "task": task,
         "reveal_location": reveal_location,
         "is_poster": request.user == task.poster if request.user.is_authenticated else False,
         "is_claimer": request.user == task.claimer if request.user.is_authenticated else False,
+        "suggested_tasks": suggested_tasks,
     })
 
 
@@ -148,7 +166,9 @@ def claim_task_view(request, pk: int):
 @require_POST
 def complete_task_view(request, pk: int):
     try:
-        task = services.complete_task(task_id=pk, requesting_user=request.user)
+        task, badge_awarded = services.complete_task(task_id=pk, requesting_user=request.user)
+        if badge_awarded and getattr(task.claimer, "badge", None):
+            messages.success(request, _(f"You just earned the {task.claimer.get_badge_display()} badge!"))
         messages.success(request, _("Task marked complete. Now go rate each other!"))
         return redirect("hustles:rate_task", pk=task.pk)
     except services.HustleError as e:

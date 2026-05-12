@@ -1,6 +1,10 @@
 {% load static i18n %}
+{% if not hide_nav %}
 <!-- Floating Nav Pill — Mastercard design language -->
-<nav class="nav-pill" id="main-nav" aria-label="{% trans 'Main navigation' %}">
+<nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-content
+            bg-white/90 backdrop-blur-md shadow-nav rounded-full px-4 py-3
+            flex items-center gap-4 transition-all duration-300"
+     id="main-nav" aria-label="{% trans 'Main navigation' %}">
 
   <!-- Logo -->
   <a href="{% url 'hustles:map' %}" class="flex items-center gap-2 flex-shrink-0" aria-label="Warrap home">
@@ -9,7 +13,7 @@
   </a>
 
   <!-- Primary links — desktop -->
-  <div class="hidden md:flex items-center gap-8 flex-1 justify-center">
+  <div class="hidden xl:flex items-center gap-8 flex-1 justify-center">
     <a href="{% url 'hustles:map' %}"
        class="text-sm font-medium text-ink hover:text-signal transition-colors duration-150 {% if request.resolver_match.url_name == 'map' %}border-b border-ink pb-0.5{% endif %}">
       {% trans "Map" %}
@@ -30,9 +34,30 @@
     {% if user.is_authenticated %}
       <!-- Post a hustle -->
       <a href="{% url 'hustles:post_task' %}"
-         class="btn-primary text-xs px-4 py-2 hidden sm:inline-flex">
-        {% include "components/icons/plus.html" with size=14 %}
+         class="btn-primary text-sm px-4 py-2 hidden sm:inline-flex">
+        <i class="ri-add-line"></i>
         {% trans "Post Hustle" %}
+      </a>
+
+      <!-- Franglais Toggle -->
+      <form action="{% url 'set_language' %}" method="post" class="hidden xl:flex items-center">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+        {% if LANGUAGE_CODE == 'en' %}
+          <button name="language" value="fr" class="text-xs text-slate hover:text-ink transition-colors">FR</button>
+        {% else %}
+          <button name="language" value="en" class="text-xs text-slate hover:text-ink transition-colors">EN</button>
+        {% endif %}
+      </form>
+
+      <!-- Notifications -->
+      <a href="{% url 'notifications:list' %}" class="relative btn-icon">
+        <i class="ri-notification-3-line"></i>
+        {% if unread_count %}
+          <span class="absolute -top-1 -right-1 w-4 h-4 rounded-circle bg-signal text-white text-[9px] font-bold flex items-center justify-center">
+            {{ unread_count }}
+          </span>
+        {% endif %}
       </a>
 
       <!-- Avatar dropdown -->
@@ -40,7 +65,7 @@
         <button class="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ink/20"
                 onclick="toggleDropdown('nav-user-menu')"
                 aria-haspopup="true" aria-expanded="false" id="nav-user-btn">
-          <img src="{{ user.avatar_url }}"
+          <img src="{% if user.profile and user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}{{ user.avatar_url }}{% endif %}"
                alt="{{ user.display_name }}"
                class="w-8 h-8 rounded-circle object-cover border border-ink/10" />
         </button>
@@ -49,17 +74,17 @@
              class="hidden absolute right-0 top-12 bg-white rounded-hero shadow-card
                     min-w-[180px] py-2 z-50 animate-fade-in border border-ink/5">
           <div class="px-4 py-2 border-b border-ink/5">
-            <p class="text-xs font-medium text-ink truncate">{{ user.display_name }}</p>
-            <p class="text-[11px] text-slate truncate">@{{ user.username }}</p>
+            <p class="text-sm font-medium text-ink truncate">{{ user.display_name }}</p>
+            <p class="text-xs text-slate truncate">@{{ user.username }}</p>
           </div>
           <a href="{% url 'accounts:profile' user.username %}"
              class="flex items-center gap-2 px-4 py-2 text-sm text-ink hover:bg-canvas transition-colors">
-            {% include "components/icons/user.html" with size=14 %}
+            <i class="ri-user-line"></i>
             {% trans "My Profile" %}
           </a>
           <a href="{% url 'accounts:edit_profile' %}"
              class="flex items-center gap-2 px-4 py-2 text-sm text-ink hover:bg-canvas transition-colors">
-            {% include "components/icons/settings.html" with size=14 %}
+            <i class="ri-settings-3-line"></i>
             {% trans "Settings" %}
           </a>
           <div class="border-t border-ink/5 mt-1 pt-1">
@@ -67,7 +92,7 @@
               {% csrf_token %}
               <button type="submit"
                       class="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                {% include "components/icons/logout.html" with size=14 %}
+                <i class="ri-logout-circle-line"></i>
                 {% trans "Log out" %}
               </button>
             </form>
@@ -76,17 +101,17 @@
       </div>
 
     {% else %}
-      <a href="{% url 'account_login' %}" class="btn-secondary text-xs px-4 py-2">
+      <a href="{% url 'account_login' %}" class="btn-secondary text-sm px-4 py-2">
         {% trans "Log in" %}
       </a>
-      <a href="{% url 'account_signup' %}" class="btn-primary text-xs px-4 py-2">
+      <a href="{% url 'account_signup' %}" class="btn-primary text-sm px-4 py-2">
         {% trans "Join the streets" %}
       </a>
     {% endif %}
 
     <!-- Mobile hamburger -->
     <button class="md:hidden btn-icon" onclick="toggleMobileMenu()" aria-label="{% trans 'Open menu' %}">
-      {% include "components/icons/menu.html" with size=18 %}
+      <i class="ri-menu-line"></i>
     </button>
   </div>
 </nav>
@@ -102,7 +127,7 @@
   <div class="flex items-center justify-between">
     <span class="font-medium text-ink">Menu</span>
     <button onclick="toggleMobileMenu()" class="btn-icon">
-      {% include "components/icons/close.html" with size=18 %}
+      <i class="ri-close-line"></i>
     </button>
   </div>
   <nav class="flex flex-col gap-1">
@@ -117,3 +142,5 @@
     {% endif %}
   </nav>
 </div>
+
+{% endif %}

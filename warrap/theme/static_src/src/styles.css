@@ -1,3 +1,87 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html { font-size: 17px; }
+  body { @apply antialiased; }
+}
+
+@layer components {
+  .section-container {
+    @apply max-w-content mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    @apply bg-white border border-ink/10 rounded-hero shadow-card p-5 sm:p-6;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-btn bg-ink text-canvas font-medium
+           px-5 py-3 border border-ink hover:bg-charcoal hover:border-charcoal
+           transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 rounded-btn bg-white text-ink font-medium
+           px-5 py-3 border border-ink/15 hover:border-ink/35 hover:bg-lifted
+           transition-all duration-200;
+  }
+
+  .btn-icon,
+  .btn-satellite {
+    @apply inline-flex items-center justify-center rounded-btn bg-white border border-ink/10
+           text-ink hover:border-ink/30 hover:bg-lifted transition-all duration-200;
+  }
+
+  .btn-icon {
+    @apply w-10 h-10;
+  }
+
+  .category-pill {
+    @apply inline-flex items-center gap-1.5 rounded-btn border border-ink/10 bg-lifted
+           px-3 py-1 text-xs font-bold uppercase tracking-wide text-slate;
+  }
+
+  /* Filter pills for map top bar */
+  .filter-pill {
+    @apply flex-shrink-0 bg-white/90 backdrop-blur-sm text-ink text-base font-medium
+           px-4 py-2.5 rounded-btn shadow-nav border border-transparent
+           transition-all duration-200 cursor-pointer whitespace-nowrap;
+  }
+  .filter-pill.active { @apply bg-ink text-canvas border-ink; }
+  .filter-pill:hover:not(.active) { @apply bg-white border-ink/20; }
+
+  /* Bottom sheet */
+  .bottom-sheet-card {
+    @apply flex items-center gap-3 px-2 py-3 rounded-btn
+           hover:bg-canvas transition-all duration-200 group cursor-pointer;
+  }
+
+  /* Step form stepper */
+  .step-tile {
+    @apply p-4 rounded-hero border-2 border-ink/10 text-left cursor-pointer
+           transition-all duration-200 hover:border-ink/30 select-none;
+  }
+  .step-tile.selected { @apply bg-ink text-canvas border-ink; }
+
+  /* Tab bar */
+  .tab {
+    @apply px-5 py-2 rounded-full text-sm font-medium text-slate
+           transition-all duration-200 cursor-pointer;
+  }
+  .tab.active { @apply bg-ink text-canvas; }
+
+  /* Stat number display */
+  .stat-number {
+    @apply text-5xl font-medium text-ink leading-none tracking-tight;
+  }
+  .stat-label {
+    @apply text-sm text-slate mt-1 font-body;
+  }
+
+  /* Podium items */
+  .podium-1 { @apply pt-0; }
+  .podium-2 { @apply pt-8; }
+  .podium-3 { @apply pt-8; }
+}

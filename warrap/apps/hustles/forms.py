@@ -10,8 +10,8 @@ from .models import TaskCategoryChoices
 
 
 INPUT_CLS = (
-    "w-full bg-white border border-ink/20 rounded-[20px] "
-    "px-4 py-3 text-ink text-sm placeholder-slate focus:outline-none "
+    "w-full bg-white border border-ink/20 rounded-[16px] "
+    "px-4 py-3 text-ink text-base placeholder-slate focus:outline-none "
     "focus:border-ink focus:ring-1 focus:ring-ink transition-all duration-200"
 )
 
@@ -83,7 +83,7 @@ class PostTaskForm(forms.Form):
 
 
 class RatingForm(forms.Form):
-    SCORE_CHOICES = [(i, "★" * i) for i in range(1, 6)]
+    SCORE_CHOICES = [(i, f"{i} star{'s' if i > 1 else ''}") for i in range(1, 6)]
 
     score = forms.ChoiceField(
         label=_("Score"),

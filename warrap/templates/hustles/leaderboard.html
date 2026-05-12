@@ -1,78 +1,57 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load static i18n %}
 
-{% block title %}{% trans "Leaderboard" %}{% endblock %}
+{% block title %}Leaderboard{% endblock %}
 
 {% block content %}
-<div class="section-container py-8 max-w-2xl">
-
-  <p class="ghost-headline text-center mb-[-2rem] select-none">Top</p>
-
-  <div class="text-center mb-10 animate-slide-up">
-    <p class="eyebrow justify-center mb-3">{% trans "This Week" %}</p>
-    <h1 class="text-[clamp(28px,4vw,48px)] font-medium tracking-tight">
-      {% trans "Street Kings & Queens" %}
-    </h1>
-    <p class="text-sm text-slate mt-2 font-body">{% trans "Top hustlers by completed tasks this week. Resets every Monday." %}</p>
+<div class="section-container py-8 max-w-4xl">
+  <div class="mb-10 text-center">
+    <p class="eyebrow justify-center text-slate mb-3">{% trans "Street Cred" %}</p>
+    <h1 class="text-section font-medium tracking-tight text-ink">Warrap Legends</h1>
   </div>
 
   {% if leaders %}
-    <div class="flex flex-col gap-3">
-      {% for user in leaders %}
-        <div class="card flex items-center gap-4 animate-slide-up"
-             style="animation-delay: {{ forloop.counter0 }}00ms;">
-
-          <!-- Rank -->
-          <div class="w-10 h-10 rounded-circle flex items-center justify-center flex-shrink-0
-                      {% if forloop.counter == 1 %}bg-amber-100 text-amber-700
-                      {% elif forloop.counter == 2 %}bg-slate-100 text-slate-600
-                      {% elif forloop.counter == 3 %}bg-orange-100 text-orange-700
-                      {% else %}bg-canvas text-slate{% endif %}
-                      font-bold text-sm">
-            {{ forloop.counter }}
+    <div class="grid md:grid-cols-3 gap-4 mb-8 items-end">
+      {% for user in leaders|slice:":3" %}
+        <div class="card text-center {% if forloop.counter == 1 %}bg-ink text-canvas md:-translate-y-4{% endif %}">
+          <div class="mx-auto w-14 h-14 rounded-btn {% if forloop.counter == 1 %}bg-signal{% else %}bg-canvas text-ink{% endif %} flex items-center justify-center font-bold text-lg">
+            {{ user.username|make_list|first|upper }}
           </div>
-
-          <!-- Avatar -->
-          <img src="https://api.dicebear.com/7.x/thumbs/svg?seed={{ user.username }}"
-               alt="@{{ user.username }}"
-               class="w-10 h-10 rounded-circle object-cover flex-shrink-0" />
-
-          <!-- Info -->
-          <div class="flex-1 min-w-0">
-            <p class="font-medium text-ink text-sm truncate">
-              {{ user.first_name }} {{ user.last_name }}
-              {% if user.badge %}
-                <span class="text-signal-light text-xs ml-1">· {{ user.badge }}</span>
-              {% endif %}
-            </p>
-            <p class="text-xs text-slate">@{{ user.username }} · ★ {{ user.street_cred|floatformat:1 }}</p>
+          <div class="mt-4 inline-flex items-center gap-2 category-pill {% if forloop.counter == 1 %}bg-white/10 text-canvas border-white/10{% endif %}">
+            <i class="ri-trophy-line"></i>#{{ forloop.counter }}
           </div>
-
-          <!-- Completed count -->
-          <div class="text-right flex-shrink-0">
-            <p class="text-xl font-medium text-ink">{{ user.week_completed }}</p>
-            <p class="text-[10px] text-slate uppercase tracking-wider">{% trans "done" %}</p>
-          </div>
-
-          {% if forloop.counter <= 3 %}
-            <span class="text-xl flex-shrink-0">
-              {% if forloop.counter == 1 %}🏆{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}
-            </span>
-          {% endif %}
-
+          <p class="font-medium mt-4 truncate">{{ user.username }}</p>
+          <p class="{% if forloop.counter == 1 %}text-canvas/65{% else %}text-slate{% endif %} text-sm">{{ user.week_completed|default:user.tasks_done_count }} done this week</p>
         </div>
       {% endfor %}
     </div>
 
+    <div class="flex flex-col gap-2">
+      {% for user in leaders|slice:"3:" %}
+        <div class="flex items-center gap-4 bg-white rounded-hero p-4 shadow-sm border border-ink/5 hover:bg-canvas transition-colors">
+          <div class="w-10 flex-shrink-0 text-center font-bold text-slate">#{{ forloop.counter|add:"3" }}</div>
+          <div class="w-11 h-11 rounded-btn bg-slate/20 flex flex-shrink-0 items-center justify-center text-ink font-bold select-none overflow-hidden">
+            {{ user.username|make_list|first|upper }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-ink truncate">{{ user.username }}</p>
+            <div class="flex items-center gap-1 text-sm">
+              <i class="ri-star-line text-signal"></i>
+              <span class="text-slate">{{ user.street_cred|default:"New" }}</span>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="font-bold text-ink">{{ user.week_completed|default:user.tasks_done_count }}</p>
+            <p class="text-xs uppercase tracking-wider text-slate">Done</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
   {% else %}
-    <div class="card text-center py-16">
-      <p class="text-4xl mb-3">🏙️</p>
-      <p class="text-slate font-body">{% trans "No completed hustles this week yet." %}</p>
-      <a href="{% url 'hustles:map' %}" class="btn-primary mt-6 inline-flex text-sm">
-        {% trans "Find a hustle now" %}
-      </a>
+    <div class="card text-center py-12">
+      <i class="ri-trophy-line text-4xl text-slate"></i>
+      <p class="text-slate mt-3">No rankings yet. Start hustling!</p>
     </div>
   {% endif %}
-
 </div>
 {% endblock %}

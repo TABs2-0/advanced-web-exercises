@@ -8,10 +8,10 @@
 <div class="min-h-[calc(100vh-6rem)] flex items-center justify-center px-4">
   <div class="w-full max-w-md">
     <div class="card animate-slide-up text-center">
-      <p class="text-4xl mb-4">📬</p>
+      <i class="ri-mail-check-line text-4xl text-signal mb-4 block"></i>
       <p class="eyebrow justify-center mb-3">{% trans "Almost there" %}</p>
       <h1 class="text-card-title font-medium mb-3">{% trans "Confirm your email" %}</h1>
-      <p class="text-sm text-slate font-body mb-6">
+      <p class="text-base text-slate font-body mb-6">
         {% blocktrans with email=confirmation.email_address.email %}
           We sent a confirmation link to <strong>{{ email }}</strong>.
           Click it to activate your account.
@@ -20,6 +20,7 @@
       <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
         {% csrf_token %}
         <button type="submit" class="btn-primary justify-center w-full py-3">
+          <i class="ri-check-line"></i>
           {% trans "Confirm now" %}
         </button>
       </form>
