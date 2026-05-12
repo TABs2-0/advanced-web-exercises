@@ -1,0 +1,45 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" class="scroll-smooth">
+<head>
+
+  {% include "partials/seo.html" %}
+
+  <link rel="icon" href="{% static 'icons/logo.png' %}" type="image/png" />
+  <link rel="apple-touch-icon" href="{% static 'icons/logo.png' %}" />
+  <link rel="manifest" href="{% static 'manifest.json' %}" />
+
+  {% if debug %}
+    {% load tailwind_tags %}
+    {% tailwind_css %}
+  {% else %}
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}" />
+  {% endif %}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-canvas text-ink font-sans min-h-screen flex flex-col">
+
+  {% include "partials/navbar.html" %}
+  {% include "partials/messages.html" %}
+
+  <main class="flex-1 pt-24 page-enter" id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block footer %}
+    {% include "partials/footer.html" %}
+  {% endblock %}
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPQ=" crossorigin=""></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

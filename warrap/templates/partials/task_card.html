@@ -1,0 +1,18 @@
+{% load i18n humanize %}
+<a href="{% url 'hustles:task_detail' task.pk %}"
+   class="block bg-white border border-ink/5 rounded-hero p-4 hover:shadow-card transition-all duration-200 group">
+  <div class="flex items-center gap-2 mb-2 flex-wrap">
+    <span class="category-pill text-[10px]">{{ task.get_category_display }}</span>
+    <span class="category-pill status-{{ task.status }} text-[10px]">{{ task.get_status_display }}</span>
+    {% if task.is_flash_gig %}
+      <span class="category-pill bg-amber-50 text-amber-700 border-amber-200 text-[10px]">⚡ Flash</span>
+    {% endif %}
+  </div>
+  <p class="text-sm font-medium text-ink group-hover:text-signal transition-colors leading-snug mb-2">
+    {{ task.title }}
+  </p>
+  <div class="flex items-center justify-between text-xs text-slate">
+    <span>{{ task.neighborhood|default:"—" }} · {{ task.created_at|naturalday }}</span>
+    <span class="font-medium text-ink">{{ task.pay_display }}</span>
+  </div>
+</a>

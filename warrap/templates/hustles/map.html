@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Live Map" %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  #hustle-map { height: calc(100vh - 10rem); min-height: 500px; }
+  .leaflet-popup-content-wrapper {
+    border-radius: 20px !important;
+    box-shadow: 0px 24px 48px rgba(0,0,0,0.08) !important;
+    border: 1px solid rgba(20,20,19,0.05);
+  }
+  .leaflet-popup-tip { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="section-container pb-8">
+
+  <!-- Page header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+      <p class="eyebrow mb-2">{% trans "Live Hustles" %}</p>
+      <h1 class="text-[clamp(28px,4vw,48px)] font-medium leading-tight tracking-tight">
+        {% trans "What's popping near you" %}
+      </h1>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- Category filter -->
+      <select id="category-filter"
+              class="field-input !rounded-full !py-2 !px-4 text-xs min-w-[140px]">
+        <option value="">{% trans "All categories" %}</option>
+        {% for value, label in categories %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      {% if user.is_authenticated %}
+        <a href="{% url 'hustles:post_task' %}" class="btn-primary text-xs">
+          {% include "components/icons/plus.html" with size=14 %}
+          {% trans "Post Hustle" %}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Map + sidebar layout -->
+  <div class="flex flex-col lg:flex-row gap-4">
+
+    <!-- Map -->
+    <div class="flex-1 map-container shadow-hero">
+      <div id="hustle-map"></div>
+    </div>
+
+    <!-- Task list sidebar -->
+    <aside class="lg:w-80 flex flex-col gap-3" id="task-sidebar">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-medium text-slate uppercase tracking-wider">
+          <span id="task-count">0</span> {% trans "hustles found" %}
+        </p>
+        <button id="locate-btn" class="btn-icon" title="{% trans 'Find my location' %}">
+          {% include "components/icons/location.html" with size=16 %}
+        </button>
+      </div>
+      <!-- Populated by JS -->
+      <div id="task-list" class="flex flex-col gap-2 overflow-y-auto max-h-[calc(100vh-16rem)]">
+        <div class="text-center py-12 text-slate text-sm animate-pulse">
+          {% trans "Scanning the streets..." %}
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── Config ──────────────────────────────────────────────────────────────
+  const API_URL = "{% url 'hustles:api_nearby' %}";
+  const CITY_COORDS = {{ default_city_coords | safe }};
+  const IS_AUTH = {{ user.is_authenticated | yesno:"true,false" }};
+  const TASK_DETAIL_BASE = "{% url 'hustles:task_detail' pk=1 %}".replace('/1/', '/');
+
+  // ── Category color map ────────────────────────────────────────────────
+  const CAT_COLORS = {
+    digital:  "#3860BE",
+    physical: "#9A3A0A",
+    delivery: "#CF4500",
+    event:    "#2d9e6b",
+    other:    "#555555",
+  };
+
+  // ── Map init ──────────────────────────────────────────────────────────
+  const map = L.map('hustle-map', { zoomControl: false });
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(map);
+
+  // Default: Yaoundé
+  map.setView([3.848, 11.502], 14);
+
+  // ── Pin layer ─────────────────────────────────────────────────────────
+  const markers = L.layerGroup().addTo(map);
+
+  function makeIcon(task) {
+    const color = CAT_COLORS[task.category] || CAT_COLORS.other;
+    const pulse = task.is_flash_gig ? 'pin-flash' : '';
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40" class="${pulse}">
+        <ellipse cx="16" cy="38" rx="6" ry="2" fill="rgba(0,0,0,0.12)"/>
+        <path d="M16 2C9.373 2 4 7.373 4 14c0 9 12 24 12 24S28 23 28 14c0-6.627-5.373-12-12-12z"
+              fill="${color}" stroke="white" stroke-width="1.5"/>
+        <circle cx="16" cy="14" r="5" fill="white" opacity="0.9"/>
+        ${task.is_flash_gig ? '<text x="16" y="18" text-anchor="middle" font-size="8" fill="'+color+'">⚡</text>' : ''}
+      </svg>`;
+    return L.divIcon({
+      html: svg,
+      iconSize: [32, 40],
+      iconAnchor: [16, 40],
+      popupAnchor: [0, -42],
+      className: '',
+    });
+  }
+
+  function buildPopup(task) {
+    const color = CAT_COLORS[task.category] || CAT_COLORS.other;
+    const flash = task.is_flash_gig
+      ? `<span class="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">⚡ Flash-Gig</span>`
+      : '';
+    return `
+      <div class="p-1 min-w-[220px]">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider" style="color:${color};">${task.category_display}</span>
+          ${flash}
+        </div>
+        <h3 class="font-medium text-ink text-sm leading-snug mb-1">${task.title}</h3>
+        <p class="text-xs text-slate mb-3">${task.neighborhood || 'Nearby'} · ${task.poster}</p>
+        <div class="flex items-center justify-between">
+          <span class="font-medium text-sm text-ink">${task.pay_display}</span>
+          <a href="${TASK_DETAIL_BASE}${task.id}/"
+             class="text-[12px] font-medium text-white px-3 py-1 rounded-full"
+             style="background:${color};">
+            View →
+          </a>
+        </div>
+      </div>`;
+  }
+
+  function buildSidebarCard(task) {
+    const color = CAT_COLORS[task.category] || CAT_COLORS.other;
+    return `
+      <a href="${TASK_DETAIL_BASE}${task.id}/"
+         class="block bg-white border border-ink/5 rounded-hero p-3 hover:shadow-card transition-all duration-200 group">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${color};"></span>
+          <span class="text-[10px] font-bold uppercase tracking-wider" style="color:${color};">${task.category_display}</span>
+          ${task.is_flash_gig ? '<span class="ml-auto text-[10px] text-amber-600 font-medium">⚡ Flash</span>' : ''}
+        </div>
+        <p class="text-sm font-medium text-ink leading-snug group-hover:text-signal transition-colors">${task.title}</p>
+        <div class="flex items-center justify-between mt-2">
+          <span class="text-xs text-slate">${task.neighborhood || 'Nearby'}</span>
+          <span class="text-xs font-medium text-ink">${task.pay_display}</span>
+        </div>
+      </a>`;
+  }
+
+  // ── Fetch and render tasks ────────────────────────────────────────────
+  let currentLat = 3.848, currentLng = 11.502;
+
+  async function loadTasks(lat, lng, category = '') {
+    try {
+      const url = `${API_URL}?lat=${lat}&lng=${lng}&category=${category}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const tasks = data.tasks || [];
+
+      markers.clearLayers();
+      const listEl = document.getElementById('task-list');
+      document.getElementById('task-count').textContent = tasks.length;
+
+      if (tasks.length === 0) {
+        listEl.innerHTML = `<div class="text-center py-12 text-slate text-sm">
+          <p class="text-3xl mb-2">🏙️</p>
+          <p>{% trans "No hustles here yet." %}</p>
+          <p class="text-xs mt-1">{% trans "Be the first to post one!" %}</p>
+        </div>`;
+        return;
+      }
+
+      listEl.innerHTML = tasks.map(buildSidebarCard).join('');
+
+      tasks.forEach(task => {
+        const marker = L.marker([task.lat, task.lng], { icon: makeIcon(task) });
+        marker.bindPopup(buildPopup(task), { maxWidth: 260 });
+        marker.on('click', () => {
+          // Highlight in sidebar
+          document.querySelectorAll('#task-list a').forEach(el => el.classList.remove('ring-2', 'ring-ink/30'));
+          const sidebarCard = listEl.querySelector(`[href*="/${task.id}/"]`);
+          if (sidebarCard) {
+            sidebarCard.classList.add('ring-2', 'ring-ink/30');
+            sidebarCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        });
+        markers.addLayer(marker);
+      });
+
+    } catch (err) {
+      console.error('Failed to load tasks:', err);
+    }
+  }
+
+  // ── Geolocation ───────────────────────────────────────────────────────
+  document.getElementById('locate-btn').addEventListener('click', () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(pos => {
+      currentLat = pos.coords.latitude;
+      currentLng = pos.coords.longitude;
+      map.setView([currentLat, currentLng], 15);
+      loadTasks(currentLat, currentLng);
+    });
+  });
+
+  map.on('moveend', () => {
+    const c = map.getCenter();
+    currentLat = c.lat;
+    currentLng = c.lng;
+    const cat = document.getElementById('category-filter').value;
+    loadTasks(currentLat, currentLng, cat);
+  });
+
+  document.getElementById('category-filter').addEventListener('change', e => {
+    loadTasks(currentLat, currentLng, e.target.value);
+  });
+
+  // Initial load
+  loadTasks(currentLat, currentLng);
+</script>
+{% endblock %}

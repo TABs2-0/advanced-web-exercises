@@ -1,0 +1,85 @@
+{% load i18n %}
+<footer class="bg-ink text-white mt-24">
+  <div class="section-container py-16 md:py-24">
+
+    <!-- Conversational headline -->
+    <h2 class="text-section font-medium text-white max-w-xl mb-12 leading-tight">
+      {% trans "Built for the streets. Powered by the hustle." %}
+    </h2>
+
+    <!-- Link grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+
+      <div>
+        <p class="text-footer-header font-bold uppercase tracking-widest text-white/50 mb-4">
+          {% trans "Platform" %}
+        </p>
+        <ul class="flex flex-col gap-2">
+          <li><a href="{% url 'hustles:map' %}" class="text-footer-link text-white/80 hover:text-white transition-colors">{% trans "Live Map" %}</a></li>
+          <li><a href="{% url 'hustles:post_task' %}" class="text-footer-link text-white/80 hover:text-white transition-colors">{% trans "Post a Hustle" %}</a></li>
+          <li><a href="{% url 'hustles:leaderboard' %}" class="text-footer-link text-white/80 hover:text-white transition-colors">{% trans "Leaderboard" %}</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="text-footer-header font-bold uppercase tracking-widest text-white/50 mb-4">
+          {% trans "Account" %}
+        </p>
+        <ul class="flex flex-col gap-2">
+          {% if user.is_authenticated %}
+            <li><a href="{% url 'accounts:profile' user.username %}" class="text-footer-link text-white/80 hover:text-white transition-colors">{% trans "Profile" %}</a></li>
+            <li><a href="{% url 'hustles:my_tasks' %}" class="text-footer-link text-white/80 hover:text-white transition-colors">{% trans "My Tasks" %}</a></li>
+          {% else %}
+            <li><a href="{% url 'account_login' %}" class="text-footer-link text-white/80 hover:text-white transition-colors">{% trans "Log in" %}</a></li>
+            <li><a href="{% url 'account_signup' %}" class="text-footer-link text-white/80 hover:text-white transition-colors">{% trans "Register" %}</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div>
+        <p class="text-footer-header font-bold uppercase tracking-widest text-white/50 mb-4">
+          {% trans "Project" %}
+        </p>
+        <ul class="flex flex-col gap-2">
+          <li>
+            <a href="https://github.com/Joel-Fah/advanced-web-exercises" target="_blank" rel="noopener"
+               class="text-footer-link text-white/80 hover:text-white transition-colors flex items-center gap-1">
+              {% trans "GitHub" %}
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+          </li>
+          <li><span class="text-footer-link text-white/40">{% trans "Advanced Web Dev Course" %}</span></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="text-footer-header font-bold uppercase tracking-widest text-white/50 mb-4">
+          {% trans "Language" %}
+        </p>
+        <form action="{% url 'set_language' %}" method="post">
+          {% csrf_token %}
+          <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+          <select name="language"
+                  onchange="this.form.submit()"
+                  class="bg-ink text-white border border-white/30 rounded-full px-4 py-2 text-sm focus:outline-none">
+            {% get_available_languages as LANGUAGES %}
+            {% get_language_info_list for LANGUAGES as languages %}
+            {% for lang in languages %}
+              <option value="{{ lang.code }}" {% if lang.code == LANGUAGE_CODE %}selected{% endif %}>
+                {{ lang.name_local|capfirst }}
+              </option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Bottom row -->
+    <div class="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-white/40">
+      <span>&copy; {% now "Y" %} Warrap — {% trans "Advanced Web Dev Course" %}</span>
+      <span>{% trans "No payments. No corporate. Just hustles." %}</span>
+    </div>
+
+  </div>
+</footer>

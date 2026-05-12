@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Leaderboard" %}{% endblock %}
+
+{% block content %}
+<div class="section-container py-8 max-w-2xl">
+
+  <p class="ghost-headline text-center mb-[-2rem] select-none">Top</p>
+
+  <div class="text-center mb-10 animate-slide-up">
+    <p class="eyebrow justify-center mb-3">{% trans "This Week" %}</p>
+    <h1 class="text-[clamp(28px,4vw,48px)] font-medium tracking-tight">
+      {% trans "Street Kings & Queens" %}
+    </h1>
+    <p class="text-sm text-slate mt-2 font-body">{% trans "Top hustlers by completed tasks this week. Resets every Monday." %}</p>
+  </div>
+
+  {% if leaders %}
+    <div class="flex flex-col gap-3">
+      {% for user in leaders %}
+        <div class="card flex items-center gap-4 animate-slide-up"
+             style="animation-delay: {{ forloop.counter0 }}00ms;">
+
+          <!-- Rank -->
+          <div class="w-10 h-10 rounded-circle flex items-center justify-center flex-shrink-0
+                      {% if forloop.counter == 1 %}bg-amber-100 text-amber-700
+                      {% elif forloop.counter == 2 %}bg-slate-100 text-slate-600
+                      {% elif forloop.counter == 3 %}bg-orange-100 text-orange-700
+                      {% else %}bg-canvas text-slate{% endif %}
+                      font-bold text-sm">
+            {{ forloop.counter }}
+          </div>
+
+          <!-- Avatar -->
+          <img src="https://api.dicebear.com/7.x/thumbs/svg?seed={{ user.username }}"
+               alt="@{{ user.username }}"
+               class="w-10 h-10 rounded-circle object-cover flex-shrink-0" />
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-ink text-sm truncate">
+              {{ user.first_name }} {{ user.last_name }}
+              {% if user.badge %}
+                <span class="text-signal-light text-xs ml-1">· {{ user.badge }}</span>
+              {% endif %}
+            </p>
+            <p class="text-xs text-slate">@{{ user.username }} · ★ {{ user.street_cred|floatformat:1 }}</p>
+          </div>
+
+          <!-- Completed count -->
+          <div class="text-right flex-shrink-0">
+            <p class="text-xl font-medium text-ink">{{ user.week_completed }}</p>
+            <p class="text-[10px] text-slate uppercase tracking-wider">{% trans "done" %}</p>
+          </div>
+
+          {% if forloop.counter <= 3 %}
+            <span class="text-xl flex-shrink-0">
+              {% if forloop.counter == 1 %}🏆{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}
+            </span>
+          {% endif %}
+
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="card text-center py-16">
+      <p class="text-4xl mb-3">🏙️</p>
+      <p class="text-slate font-body">{% trans "No completed hustles this week yet." %}</p>
+      <a href="{% url 'hustles:map' %}" class="btn-primary mt-6 inline-flex text-sm">
+        {% trans "Find a hustle now" %}
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

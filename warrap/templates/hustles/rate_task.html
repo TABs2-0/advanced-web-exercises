@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Rate" %} {{ ratee.display_name }}{% endblock %}
+
+{% block content %}
+<div class="section-container py-8 max-w-md">
+  <div class="card animate-slide-up">
+
+    <p class="eyebrow justify-center mb-4">{% trans "Post-task rating" %}</p>
+
+    <div class="text-center mb-6">
+      <img src="{{ ratee.avatar_url }}" alt="{{ ratee.display_name }}"
+           class="w-16 h-16 rounded-circle object-cover mx-auto mb-3 shadow-card" />
+      <h1 class="text-card-title font-medium text-ink">{% trans "How was" %} {{ ratee.display_name }}?</h1>
+      <p class="text-xs text-slate mt-1">{% trans "Task:" %} {{ task.title }}</p>
+    </div>
+
+    <form method="post" class="flex flex-col gap-4" novalidate>
+      {% csrf_token %}
+
+      <!-- Interactive star rating -->
+      <div class="flex flex-col items-center gap-3">
+        <p class="text-xs font-medium text-ink">{% trans "Score" %}</p>
+        <div id="star-rating" class="flex gap-2">
+          {% for i in "12345" %}
+            <button type="button" data-star="{{ forloop.counter }}"
+                    class="text-3xl text-slate hover:text-amber-400 transition-colors cursor-pointer">★</button>
+          {% endfor %}
+        </div>
+        {{ form.score.as_hidden }}
+      </div>
+
+      <!-- Comment -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-ink">{{ form.comment.label }}</label>
+        {{ form.comment }}
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="toast-error px-4 py-3 rounded-btn border text-sm">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <button type="submit" class="btn-primary w-full justify-center py-3">
+        {% trans "Submit Rating" %}
+      </button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

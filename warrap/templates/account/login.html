@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block meta_title %}{% trans "Log in" %}{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-6rem)] flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-md">
+
+    <p class="ghost-headline text-center mb-[-1.5rem] select-none pointer-events-none">Login</p>
+
+    <div class="card animate-slide-up">
+
+      <div class="text-center mb-8">
+        <p class="eyebrow justify-center mb-3">{% trans "Welcome back" %}</p>
+        <h1 class="text-card-title font-medium text-ink">{% trans "Back in the streets?" %}</h1>
+        <p class="text-sm text-slate mt-2 font-body">{% trans "Your hustle-map missed you." %}</p>
+      </div>
+
+      {# ── Google OAuth ──────────────────────────────────────────────────── #}
+      <div class="mb-6">
+        <a href="{% url 'google_login' %}"
+           class="flex items-center justify-center gap-3 w-full
+                  bg-white border border-ink/20 rounded-btn
+                  px-4 py-3 text-sm font-medium text-ink
+                  hover:bg-canvas transition-all duration-200 shadow-sm">
+          <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          {% trans "Continue with Google" %}
+        </a>
+      </div>
+
+      <div class="flex items-center gap-3 mb-6">
+        <div class="flex-1 h-px bg-ink/10"></div>
+        <span class="text-xs text-slate">{% trans "or" %}</span>
+        <div class="flex-1 h-px bg-ink/10"></div>
+      </div>
+
+      {# ── Credentials form ───────────────────────────────────────────────── #}
+      <form method="post" action="{% url 'account_login' %}" class="flex flex-col gap-4" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="toast-error px-4 py-3 rounded-btn border text-sm">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="flex flex-col gap-1.5">
+          <label for="{{ form.login.id_for_label }}" class="text-xs font-medium text-ink">
+            {% trans "Username or email" %}
+          </label>
+          {{ form.login }}
+          {% for e in form.login.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <label for="{{ form.password.id_for_label }}" class="text-xs font-medium text-ink">
+              {% trans "Password" %}
+            </label>
+            <a href="{% url 'account_reset_password' %}"
+               class="text-xs text-slate hover:text-ink transition-colors">
+              {% trans "Forgot?" %}
+            </a>
+          </div>
+          {{ form.password }}
+          {% for e in form.password.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+        </div>
+
+        {% if form.remember %}
+          <label class="flex items-center gap-2 text-sm text-slate cursor-pointer select-none">
+            {{ form.remember }}
+            {% trans "Keep me logged in" %}
+          </label>
+        {% endif %}
+
+        <button type="submit" class="btn-primary w-full justify-center py-3 mt-1">
+          {% trans "Let me in" %}
+        </button>
+      </form>
+
+      <p class="text-center text-sm text-slate mt-6 font-body">
+        {% trans "New to Warrap?" %}
+        <a href="{% url 'account_signup' %}" class="text-ink font-medium underline underline-offset-2">
+          {% trans "Join the streets" %}
+        </a>
+      </p>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

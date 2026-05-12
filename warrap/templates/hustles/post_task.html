@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Post a Hustle" %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  #pin-map { height: 300px; border-radius: 20px; overflow: hidden; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="section-container py-8 max-w-2xl">
+
+  <p class="eyebrow mb-3">{% trans "New Hustle" %}</p>
+  <h1 class="text-[clamp(28px,4vw,42px)] font-medium leading-tight tracking-tight mb-2">
+    {% trans "Drop the job. We'll pin it." %}
+  </h1>
+  <p class="text-slate font-body mb-8">{% trans "Fill this in 30 seconds or less. No long form, we promise." %}</p>
+
+  <form method="post" class="flex flex-col gap-6" id="post-task-form" novalidate>
+    {% csrf_token %}
+
+    <!-- Title -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-ink">{{ form.title.label }} <span class="text-signal">*</span></label>
+      {{ form.title }}
+      {% for e in form.title.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+    </div>
+
+    <!-- Description -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-medium text-ink">{{ form.description.label }} <span class="text-signal">*</span></label>
+      {{ form.description }}
+      {% for e in form.description.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+    </div>
+
+    <!-- Category + Pay row -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-ink">{{ form.category.label }}</label>
+        {{ form.category }}
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-ink">{{ form.pay.label }} <span class="text-signal">*</span></label>
+        {{ form.pay }}
+        {% for e in form.pay.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+      </div>
+    </div>
+
+    <!-- People + Neighborhood row -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-ink">{{ form.required_people.label }}</label>
+        {{ form.required_people }}
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-ink">{{ form.neighborhood.label }}</label>
+        {{ form.neighborhood }}
+      </div>
+    </div>
+
+    <!-- Expiry + Flash-gig -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium text-ink">{{ form.hours_until_expiry.label }}</label>
+        {{ form.hours_until_expiry }}
+      </div>
+      <div class="flex items-center gap-3 pt-6">
+        {{ form.is_flash_gig }}
+        <label class="text-xs font-medium text-ink cursor-pointer">{{ form.is_flash_gig.label }}</label>
+      </div>
+    </div>
+
+    <!-- Map pin selector -->
+    <div class="flex flex-col gap-2">
+      <label class="text-xs font-medium text-ink">
+        {% trans "Pin your location" %} <span class="text-signal">*</span>
+      </label>
+      <p class="text-[11px] text-slate">{% trans "Click the map to drop your task pin. Only an approximate location is shown publicly." %}</p>
+      <div id="pin-map" class="border border-ink/10 shadow-card"></div>
+      <div id="pin-coords-display" class="text-[11px] text-slate hidden">
+        {% trans "Pin set at" %}: <span id="pin-lat-display"></span>, <span id="pin-lng-display"></span>
+      </div>
+      {{ form.latitude }}
+      {{ form.longitude }}
+      {% for e in form.latitude.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+      {% for e in form.non_field_errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+    </div>
+
+    <!-- Submit -->
+    <div class="flex gap-3">
+      <button type="submit" class="btn-primary flex-1 justify-center py-3">
+        {% include "components/icons/pin.html" with size=16 %}
+        {% trans "Post this Hustle" %}
+      </button>
+      <a href="{% url 'hustles:map' %}" class="btn-secondary px-6 py-3">{% trans "Cancel" %}</a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Embedded pin-drop map
+  const pinMap = L.map('pin-map').setView([3.848, 11.502], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(pinMap);
+
+  let pinMarker = null;
+  const latInput = document.getElementById('id_latitude');
+  const lngInput = document.getElementById('id_longitude');
+
+  // Try to use real location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      pinMap.setView([pos.coords.latitude, pos.coords.longitude], 16);
+    });
+  }
+
+  pinMap.on('click', e => {
+    const { lat, lng } = e.latlng;
+    if (pinMarker) pinMarker.remove();
+    pinMarker = L.marker([lat, lng], {
+      icon: L.divIcon({
+        html: `<div class="w-4 h-4 rounded-full bg-signal border-2 border-white shadow-card"></div>`,
+        iconSize: [16, 16], iconAnchor: [8, 8], className: ''
+      })
+    }).addTo(pinMap);
+
+    latInput.value = lat.toFixed(6);
+    lngInput.value = lng.toFixed(6);
+
+    document.getElementById('pin-lat-display').textContent = lat.toFixed(4);
+    document.getElementById('pin-lng-display').textContent = lng.toFixed(4);
+    document.getElementById('pin-coords-display').classList.remove('hidden');
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% load static i18n %}
+{% comment %}
+  partials/seo.html
+  -----------------
+  Full SEO meta tag block. Included once in base.html <head>.
+  Views override these blocks to customise per-page metadata:
+
+    {% block meta_title %}    — browser tab + OG title
+    {% block meta_description %} — meta description + OG description
+    {% block meta_image %}    — OG / Twitter card image URL
+    {% block meta_url %}      — canonical URL (defaults to current page)
+    {% block meta_type %}     — OG type (website | article | profile)
+    {% block meta_robots %}   — robots directive
+    {% block meta_extra %}    — any extra <meta> tags
+
+  Site-wide defaults come from settings.SITE_META via context processor.
+{% endcomment %}
+
+{# ── Resolved values (view block overrides site defaults) ────────────── #}
+{% with page_title=block.super|default:meta.name page_description=meta.description page_image=meta.og_image page_url=request.build_absolute_uri page_type="website" page_robots=meta.robots %}
+
+    {# ── 1. Charset & viewport (always first) ────────────────────────────── #}
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+
+    {# ── 2. Primary SEO ───────────────────────────────────────────────────── #}
+    <title>{% block meta_title %}{{ meta.name }}{% endblock %} — {{ meta.tagline }}</title>
+
+    <meta name="description" content="{% block meta_description %}{{ meta.description }}{% endblock %}"/>
+    <meta name="keywords" content="{{ meta.keywords }}"/>
+    <meta name="author" content="{{ meta.author }}"/>
+    <meta name="robots" content="{% block meta_robots %}{{ meta.robots }}{% endblock %}"/>
+    <meta name="theme-color" content="{{ meta.theme_color }}"/>
+    <meta name="color-scheme" content="light"/>
+
+    {# ── 3. Canonical URL ─────────────────────────────────────────────────── #}
+    <link rel="canonical" href="{% block meta_url %}{{ request.build_absolute_uri }}{% endblock %}"/>
+
+    {# ── 4. Language alternates ───────────────────────────────────────────── #}
+    <link rel="alternate" hreflang="en" href="{{ request.build_absolute_uri }}"/>
+    <link rel="alternate" hreflang="fr" href="{{ request.build_absolute_uri }}"/>
+    <link rel="alternate" hreflang="x-default" href="{{ meta.url }}"/>
+
+    {# ── 5. Open Graph (Facebook, LinkedIn, WhatsApp previews) ───────────── #}
+    <meta property="og:type" content="{% block meta_type %}website{% endblock %}"/>
+    <meta property="og:site_name" content="{{ meta.name }}"/>
+    <meta property="og:title" content="
+            {% block og_title %}{% block meta_title_og %}{{ meta.name }} — {{ meta.tagline }}{% endblock %}{% endblock %}"/>
+    <meta property="og:description" content="{% block og_description %}{{ meta.description }}{% endblock %}"/>
+    <meta property="og:url" content="{{ request.build_absolute_uri }}"/>
+    <meta property="og:image" content="
+            {% block meta_image %}{{ request.scheme }}://{{ request.get_host }}{{ meta.og_image }}{% endblock %}"/>
+    <meta property="og:image:width" content="1200"/>
+    <meta property="og:image:height" content="630"/>
+    <meta property="og:image:alt" content="{{ meta.name }} — {{ meta.tagline }}"/>
+    <meta property="og:locale" content="{{ meta.locale }}"/>
+    <meta property="og:locale:alternate" content="{{ meta.locale_alternate }}"/>
+
+    {# ── 6. Twitter / X card ─────────────────────────────────────────────── #}
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:site" content="{{ meta.twitter_handle }}"/>
+    <meta name="twitter:creator" content="{{ meta.twitter_handle }}"/>
+    <meta name="twitter:title" content="{{ meta.name }} — {{ meta.tagline }}"/>
+    <meta name="twitter:description" content="{{ meta.description }}"/>
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ meta.og_image }}"/>
+    <meta name="twitter:image:alt" content="{{ meta.name }}"/>
+
+    {# ── 7. Mobile app / PWA ─────────────────────────────────────────────── #}
+    <meta name="application-name" content="{{ meta.name }}"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+    <meta name="apple-mobile-web-app-title" content="{{ meta.name }}"/>
+    <meta name="msapplication-TileColor" content="{{ meta.theme_color }}"/>
+    <meta name="msapplication-config" content="{% static 'img/browserconfig.xml' %}"/>
+
+    {# ── 8. Geo / local signals (helpful for Cameroon indexing) ──────────── #}
+    <meta name="geo.region" content="CM"/>
+    <meta name="geo.placename" content="Cameroon"/>
+    <meta name="ICBM" content="3.848, 11.502"/>
+
+    {# ── 9. Structured data — WebSite JSON-LD ────────────────────────────── #}
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "{{ meta.name }}",
+  "url": "{{ meta.url }}",
+  "description": "{{ meta.description }}",
+  "inLanguage": ["en-CM", "fr-CM"],
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "{{ meta.url }}/hustles/?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+    </script>
+
+    {# ── 10. Per-page extra meta (e.g. noindex on auth pages) ────────────── #}
+    {% block meta_extra %}{% endblock %}
+
+{% endwith %}
