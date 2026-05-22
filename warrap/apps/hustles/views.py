@@ -8,6 +8,8 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -15,8 +17,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 
-from .forms import PostTaskForm, RatingForm
-from .models import Task, TaskCategoryChoices
+from .forms import PostTaskForm, RatingForm, TaskApplicationForm
+from .models import Task, TaskApplication, TaskCategoryChoices
 from . import services
 
 
@@ -84,9 +86,18 @@ def nearby_tasks_api(request):
 # ---------------------------------------------------------------------------
 
 def task_detail_view(request, pk: int):
-    task = get_object_or_404(Task, pk=pk)
+    task = get_object_or_404(
+        Task.objects.select_related("poster", "claimer").prefetch_related("applications__applicant"),
+        pk=pk,
+    )
     is_party = request.user.is_authenticated and request.user in (task.poster, task.claimer)
     reveal_location = is_party and task.status in (Task.StatusChoices.CLAIMED, Task.StatusChoices.COMPLETED)
+    is_poster = request.user == task.poster if request.user.is_authenticated else False
+    is_claimer = request.user == task.claimer if request.user.is_authenticated else False
+    user_application = None
+    if request.user.is_authenticated and not is_poster:
+        user_application = task.applications.filter(applicant=request.user).first()
+    applications = task.applications.select_related("applicant").order_by("-created_at") if is_poster else []
     suggested_tasks = (
         Task.objects.filter(
             status=Task.StatusChoices.OPEN,
@@ -100,8 +111,12 @@ def task_detail_view(request, pk: int):
     return render(request, "hustles/task_detail.html", {
         "task": task,
         "reveal_location": reveal_location,
-        "is_poster": request.user == task.poster if request.user.is_authenticated else False,
-        "is_claimer": request.user == task.claimer if request.user.is_authenticated else False,
+        "is_party": is_party,
+        "is_poster": is_poster,
+        "is_claimer": is_claimer,
+        "applications": applications,
+        "user_application": user_application,
+        "application_form": TaskApplicationForm(),
         "suggested_tasks": suggested_tasks,
     })
 
@@ -140,22 +155,45 @@ def post_task_view(request):
 
 
 # ---------------------------------------------------------------------------
-# Claim
+# Apply and select
 # ---------------------------------------------------------------------------
 
 @login_required
 @require_POST
-def claim_task_view(request, pk: int):
+def apply_task_view(request, pk: int):
+    form = TaskApplicationForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Please check your application note."))
+        return redirect("hustles:task_detail", pk=pk)
     try:
-        task = services.claim_task(task_id=pk, claimer=request.user)
-        messages.success(request, _("Locked! Check the task details for contact info."))
-        return redirect("hustles:task_detail", pk=task.pk)
+        application = services.apply_to_task(
+            task_id=pk,
+            applicant=request.user,
+            note=form.cleaned_data.get("note", ""),
+        )
+        messages.success(request, _("Application sent. The poster will choose who gets the gig."))
+        return redirect("hustles:task_detail", pk=application.task_id)
+    except services.AlreadyAppliedError as e:
+        messages.warning(request, str(e))
     except services.AlreadyClaimedError as e:
         messages.warning(request, str(e))
     except services.HustleError as e:
         messages.error(request, str(e))
 
     return redirect("hustles:task_detail", pk=pk)
+
+
+@login_required
+@require_POST
+def accept_application_view(request, application_id: int):
+    application = get_object_or_404(TaskApplication, pk=application_id)
+    try:
+        task = services.accept_application(application_id=application.pk, poster=request.user)
+        messages.success(request, _(f"@{task.claimer.username} has been selected. The gig is now locked."))
+        return redirect("hustles:task_detail", pk=task.pk)
+    except services.HustleError as e:
+        messages.error(request, str(e))
+        return redirect("hustles:task_detail", pk=application.task_id)
 
 
 # ---------------------------------------------------------------------------
@@ -167,9 +205,15 @@ def claim_task_view(request, pk: int):
 def complete_task_view(request, pk: int):
     try:
         task, badge_awarded = services.complete_task(task_id=pk, requesting_user=request.user)
+        if task.status == Task.StatusChoices.CLAIMED:
+            messages.success(
+                request,
+                _(f"Completion noted. Waiting on {task.completion_waiting_on} to confirm."),
+            )
+            return redirect("hustles:task_detail", pk=task.pk)
         if badge_awarded and getattr(task.claimer, "badge", None):
             messages.success(request, _(f"You just earned the {task.claimer.get_badge_display()} badge!"))
-        messages.success(request, _("Task marked complete. Now go rate each other!"))
+        messages.success(request, _("Both sides confirmed. Task completed. Now go rate each other!"))
         return redirect("hustles:rate_task", pk=task.pk)
     except services.HustleError as e:
         messages.error(request, str(e))
@@ -232,7 +276,41 @@ def leaderboard_view(request):
 def my_tasks_view(request):
     posted = Task.objects.filter(poster=request.user).order_by("-created_at")[:20]
     claimed = Task.objects.filter(claimer=request.user).order_by("-updated_at")[:20]
+    applications = (
+        TaskApplication.objects.filter(applicant=request.user)
+        .select_related("task", "task__poster")
+        .order_by("-created_at")[:20]
+    )
     return render(request, "hustles/my_tasks.html", {
         "posted": posted,
         "claimed": claimed,
+        "applications": applications,
+    })
+
+
+def _superuser_required(user):
+    return user.is_authenticated and user.is_superuser
+
+
+@user_passes_test(_superuser_required)
+def admin_dashboard_view(request):
+    tasks = (
+        Task.objects.select_related("poster", "claimer")
+        .annotate(application_count=Count("applications"))
+        .order_by("-created_at")[:50]
+    )
+    applications = (
+        TaskApplication.objects.select_related("task", "applicant", "task__poster")
+        .order_by("-created_at")[:80]
+    )
+    stats = {
+        "open": Task.objects.filter(status=Task.StatusChoices.OPEN, expires_at__gt=timezone.now()).count(),
+        "claimed": Task.objects.filter(status=Task.StatusChoices.CLAIMED).count(),
+        "completed": Task.objects.filter(status=Task.StatusChoices.COMPLETED).count(),
+        "applications": TaskApplication.objects.count(),
+    }
+    return render(request, "hustles/admin_dashboard.html", {
+        "tasks": tasks,
+        "applications": applications,
+        "stats": stats,
     })

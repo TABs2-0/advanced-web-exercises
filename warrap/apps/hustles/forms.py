@@ -3,6 +3,8 @@ hustles.forms
 -------------
 Task posting and rating forms.
 """
+from decimal import Decimal, InvalidOperation
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -36,12 +38,15 @@ class PostTaskForm(forms.Form):
         choices=TaskCategoryChoices.choices,
         widget=forms.Select(attrs={"class": INPUT_CLS}),
     )
-    pay = forms.DecimalField(
+    pay = forms.CharField(
         label=_("Pay (XAF)"),
-        min_value=0,
-        max_digits=10,
-        decimal_places=0,
-        widget=forms.NumberInput(attrs={"placeholder": "2500", "class": INPUT_CLS}),
+        widget=forms.TextInput(attrs={
+            "placeholder": "2,500",
+            "class": INPUT_CLS,
+            "inputmode": "numeric",
+            "autocomplete": "off",
+            "data-format": "money",
+        }),
     )
     required_people = forms.IntegerField(
         label=_("People needed"),
@@ -80,6 +85,33 @@ class PostTaskForm(forms.Form):
         if lat is None or lng is None:
             raise forms.ValidationError(_("Please drop a pin on the map to set the task location."))
         return cleaned
+
+    def clean_pay(self):
+        raw = str(self.cleaned_data["pay"]).replace(",", "").replace(" ", "")
+        try:
+            value = Decimal(raw)
+        except (InvalidOperation, ValueError):
+            raise forms.ValidationError(_("Enter a valid amount."))
+        if value <= 0:
+            raise forms.ValidationError(_("Pay must be greater than zero."))
+        if value != value.to_integral_value():
+            raise forms.ValidationError(_("Pay must be a whole XAF amount."))
+        if value > Decimal("9999999999"):
+            raise forms.ValidationError(_("Pay is too large."))
+        return value
+
+
+class TaskApplicationForm(forms.Form):
+    note = forms.CharField(
+        label=_("Application note"),
+        max_length=180,
+        required=False,
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": _("Optional: say why you are a good fit."),
+            "class": INPUT_CLS,
+        }),
+    )
 
 
 class RatingForm(forms.Form):

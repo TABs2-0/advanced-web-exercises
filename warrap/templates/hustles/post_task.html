@@ -8,6 +8,8 @@
   body { background-color: #F3F0EE; }
   #pin-map { height: 320px; border-radius: 26px; overflow: hidden; z-index: 10; }
   .leaflet-control-attribution { display: none; }
+  .field-error { border-color: #dc2626 !important; box-shadow: 0 0 0 1px #dc2626; }
+  .step-error { color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem; }
 </style>
 {% endblock %}
 
@@ -94,9 +96,9 @@
         <div>
           <label class="block text-sm font-bold text-ink mb-2">{% trans "Pay (XAF)" %}</label>
           <div class="relative">
-            <input type="number" name="pay" id="id_pay" min="0" step="500"
+          <input type="text" name="pay" id="id_pay" inputmode="numeric" data-format="money"
                    class="w-full bg-white border border-ink/10 rounded-hero p-4 pl-14 text-2xl font-medium focus:border-ink focus:ring-1 focus:ring-ink outline-none transition-shadow shadow-sm"
-                   placeholder="2500" required value="{{ form.pay.value|default_if_none:'' }}">
+                   placeholder="2,500" required value="{{ form.pay.value|default_if_none:'' }}">
             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate font-bold">XAF</span>
           </div>
           {% for e in form.pay.errors %}<p class="text-sm text-red-600 mt-1">{{ e }}</p>{% endfor %}
@@ -229,6 +231,16 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCount();
   }
 
+  const payInput = document.getElementById('id_pay');
+  if (payInput) {
+    const formatMoney = () => {
+      const digits = payInput.value.replace(/[^\d]/g, '');
+      payInput.value = digits ? Number(digits).toLocaleString('en-US') : '';
+    };
+    payInput.addEventListener('input', formatMoney);
+    formatMoney();
+  }
+
   const curCat = document.getElementById('id_category').value || 'physical';
   const catTile = document.querySelector(`.category-tile[data-category="${curCat}"]`);
   if(catTile) selectCategory(curCat, catTile);
@@ -319,21 +331,17 @@ function adjustPeople(delta) {
 
 function goNext(step) {
   if (step === 2) {
-    if(!document.getElementById('id_title').value) { alert("Title is required"); document.getElementById('id_title').focus(); return; }
-    if(!document.getElementById('id_description').value) { alert("Details required"); document.getElementById('id_description').focus(); return; }
+    if(!validateStep(1)) return;
   }
   if (step === 3) {
-    if(!document.getElementById('id_pay').value) { alert("Pay is required"); document.getElementById('id_pay').focus(); return; }
+    if(!validateStep(2)) return;
     window.refreshMap();
   }
   goToStep(step);
 }
 
 function prepareReview() {
-  if(!document.getElementById('id_latitude').value) {
-    alert("Please drop a pin on the map.");
-    return;
-  }
+  if(!validateStep(3)) return;
 
   const title = document.getElementById('id_title').value;
   const desc = document.getElementById('id_description').value;
@@ -366,11 +374,57 @@ function prepareReview() {
 }
 
 function validateForm() {
-  if(!document.getElementById('id_latitude').value) {
-    alert("Please drop a pin on the map.");
-    goToStep(3);
-    return false;
+  if(!validateStep(1)) { goToStep(1); return false; }
+  if(!validateStep(2)) { goToStep(2); return false; }
+  if(!validateStep(3)) { goToStep(3); return false; }
+  return true;
+}
+
+function setFieldError(field, message) {
+  clearFieldError(field);
+  field.classList.add('field-error');
+  const error = document.createElement('p');
+  error.className = 'step-error';
+  error.dataset.for = field.id;
+  error.textContent = message;
+  field.closest('div').appendChild(error);
+  field.focus();
+}
+
+function clearFieldError(field) {
+  field.classList.remove('field-error');
+  document.querySelectorAll(`.step-error[data-for="${field.id}"]`).forEach(el => el.remove());
+}
+
+function validateStep(step) {
+  const title = document.getElementById('id_title');
+  const description = document.getElementById('id_description');
+  const pay = document.getElementById('id_pay');
+  const category = document.getElementById('id_category');
+  const latitude = document.getElementById('id_latitude');
+  [title, description, pay, category, latitude].forEach(field => field && clearFieldError(field));
+
+  if (step === 1) {
+    if (!title.value.trim()) { setFieldError(title, "Add a clear title before moving on."); return false; }
+    if (title.value.trim().length < 6) { setFieldError(title, "Make the title a little more specific."); return false; }
+    if (!description.value.trim()) { setFieldError(description, "Add the details before moving on."); return false; }
+    if (description.value.trim().length < 20) { setFieldError(description, "Give at least 20 characters of detail."); return false; }
   }
+
+  if (step === 2) {
+    if (!category.value) { setFieldError(category, "Choose a category."); return false; }
+    const payValue = parseInt(pay.value.replace(/[^\d]/g, ''), 10);
+    if (!payValue || payValue <= 0) { setFieldError(pay, "Enter a valid XAF amount."); return false; }
+  }
+
+  if (step === 3) {
+    if (!latitude.value) {
+      const map = document.getElementById('pin-map');
+      map.insertAdjacentHTML('afterend', '<p class="step-error" data-for="id_latitude">Drop a pin on the map before reviewing.</p>');
+      return false;
+    }
+  }
+
   return true;
 }
 </script>

@@ -87,6 +87,13 @@
             <i class="ri-settings-3-line"></i>
             {% trans "Settings" %}
           </a>
+          {% if user.is_superuser %}
+            <a href="{% url 'hustles:admin_dashboard' %}"
+               class="flex items-center gap-2 px-4 py-2 text-sm text-ink hover:bg-canvas transition-colors">
+              <i class="ri-dashboard-3-line"></i>
+              {% trans "Ops dashboard" %}
+            </a>
+          {% endif %}
           <div class="border-t border-ink/5 mt-1 pt-1">
             <form method="post" action="{% url 'account_logout' %}">
               {% csrf_token %}

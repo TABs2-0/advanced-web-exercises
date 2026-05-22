@@ -16,7 +16,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from .models import Task, Rating, TaskCategoryChoices
+from .models import Task, Rating, TaskApplication, TaskCategoryChoices
 
 
 # ---------------------------------------------------------------------------
@@ -29,6 +29,10 @@ class HustleError(Exception):
 
 class AlreadyClaimedError(HustleError):
     """Task was grabbed by someone else while you were looking."""
+
+
+class AlreadyAppliedError(HustleError):
+    """User has already applied for this task."""
 
 
 # ---------------------------------------------------------------------------
@@ -139,47 +143,100 @@ def get_nearby_tasks(
 
 
 # ---------------------------------------------------------------------------
-# Claiming
+# Applications and selection
 # ---------------------------------------------------------------------------
 
 @transaction.atomic
-def claim_task(task_id: int, claimer) -> Task:
+def apply_to_task(task_id: int, applicant, note: str = "") -> TaskApplication:
     """
-    Atomically lock a task for a claimer.
-    Raises HustleError on any violation.
+    Apply to an open task without removing it from the map.
+    The poster chooses one applicant later.
     """
     try:
-        # Select for update to prevent race conditions
         task = Task.objects.select_for_update().get(pk=task_id)
 
-        if task.poster == claimer:
-            raise HustleError(_("You cannot claim your own task."))
+        if task.poster == applicant:
+            raise HustleError(_("You cannot apply to your own task."))
 
         if task.status != Task.StatusChoices.OPEN:
-            raise AlreadyClaimedError(_("Someone else got there first. Keep hunting."))
+            raise AlreadyClaimedError(_("This task is no longer accepting applicants."))
 
         if task.is_expired:
             raise HustleError(_("This task has already expired."))
 
-        task.claimer = claimer
-        task.status = Task.StatusChoices.CLAIMED
-        task.save(update_fields=["claimer", "status", "updated_at"])
+        application, created = TaskApplication.objects.get_or_create(
+            task=task,
+            applicant=applicant,
+            defaults={"note": note[:180]},
+        )
+        if not created:
+            if application.status == TaskApplication.StatusChoices.WITHDRAWN:
+                application.status = TaskApplication.StatusChoices.PENDING
+                application.note = note[:180]
+                application.save(update_fields=["status", "note", "updated_at"])
+            else:
+                raise AlreadyAppliedError(_("You already applied for this hustle."))
 
-        # Create a notification for the poster
         from apps.notifications.models import Notification
         Notification.objects.create(
             recipient=task.poster,
             kind=Notification.KindChoices.TASK_CLAIMED,
-            title=f"Your task '{task.title}' was claimed!",
-            body=f"@{claimer.username} just locked your warrap.",
+            title=f"New applicant for '{task.title}'",
+            body=f"@{applicant.username} wants to work on your warrap.",
             url=f"/hustles/{task.pk}/",
         )
 
-        _bust_map_cache()
-        return task
+        return application
 
     except Task.DoesNotExist:
         raise HustleError(_("This hustle no longer exists."))
+
+
+@transaction.atomic
+def accept_application(application_id: int, poster) -> Task:
+    """Choose an applicant and lock the task for that person."""
+    application = (
+        TaskApplication.objects.select_for_update()
+        .select_related("task", "applicant")
+        .get(pk=application_id)
+    )
+    task = Task.objects.select_for_update().get(pk=application.task_id)
+
+    if task.poster != poster:
+        raise HustleError(_("Only the poster can choose an applicant."))
+    if task.status != Task.StatusChoices.OPEN:
+        raise HustleError(_("This task is no longer open."))
+    if task.is_expired:
+        raise HustleError(_("This task has already expired."))
+    if application.status != TaskApplication.StatusChoices.PENDING:
+        raise HustleError(_("This application is not pending."))
+
+    application.status = TaskApplication.StatusChoices.ACCEPTED
+    application.save(update_fields=["status", "updated_at"])
+    TaskApplication.objects.filter(task=task, status=TaskApplication.StatusChoices.PENDING).exclude(
+        pk=application.pk
+    ).update(status=TaskApplication.StatusChoices.REJECTED)
+
+    task.claimer = application.applicant
+    task.status = Task.StatusChoices.CLAIMED
+    task.poster_marked_complete_at = None
+    task.claimer_marked_complete_at = None
+    task.save(update_fields=[
+        "claimer", "status", "poster_marked_complete_at",
+        "claimer_marked_complete_at", "updated_at",
+    ])
+
+    from apps.notifications.models import Notification
+    Notification.objects.create(
+        recipient=application.applicant,
+        kind=Notification.KindChoices.TASK_CLAIMED,
+        title=f"You were chosen for '{task.title}'",
+        body="The poster accepted your application. Check the task details.",
+        url=f"/hustles/{task.pk}/",
+    )
+
+    _bust_map_cache()
+    return task
 
 
 # ---------------------------------------------------------------------------
@@ -188,17 +245,36 @@ def claim_task(task_id: int, claimer) -> Task:
 
 @transaction.atomic
 def complete_task(task_id: int, requesting_user) -> Task:
-    """Mark a claimed task as completed."""
+    """Record one party's completion confirmation; complete after both confirm."""
     task = Task.objects.select_for_update().get(pk=task_id)
 
     if requesting_user not in (task.poster, task.claimer):
         raise HustleError(_("Only the poster or claimer can complete this task."))
 
     if task.status != Task.StatusChoices.CLAIMED:
-        raise HustleError(_("Task is not in a claimable state for completion."))
+        raise HustleError(_("Task is not ready for completion."))
+
+    now = timezone.now()
+    if requesting_user == task.poster:
+        task.poster_marked_complete_at = task.poster_marked_complete_at or now
+    else:
+        task.claimer_marked_complete_at = task.claimer_marked_complete_at or now
+
+    if not (task.poster_marked_complete_at and task.claimer_marked_complete_at):
+        task.save(update_fields=[
+            "poster_marked_complete_at",
+            "claimer_marked_complete_at",
+            "updated_at",
+        ])
+        return task, False
 
     task.status = Task.StatusChoices.COMPLETED
-    task.save(update_fields=["status", "updated_at"])
+    task.save(update_fields=[
+        "status",
+        "poster_marked_complete_at",
+        "claimer_marked_complete_at",
+        "updated_at",
+    ])
 
     # Increment claimer's completed count
     badge_awarded = False

@@ -1,0 +1,67 @@
+services:
+  web:
+    build:
+      context: .
+    image: warrap:local
+    env_file:
+      - .env.docker
+    environment:
+      DJANGO_SETTINGS_MODULE: warrap.settings.dev
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: warrap_db
+      DB_USER: warrap
+      DB_PASSWORD: warrap
+      REDIS_URL: redis://redis:6379/1
+      BUILD_TAILWIND: "true"
+      RUN_MIGRATIONS: "true"
+      RUN_COLLECTSTATIC: "true"
+      SEED_DATA: "false"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - staticfiles:/app/staticfiles
+      - media:/app/media
+      - node_modules:/app/theme/static_src/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: warrap_db
+      POSTGRES_USER: warrap
+      POSTGRES_PASSWORD: warrap
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U warrap -d warrap_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  postgres_data:
+  redis_data:
+  staticfiles:
+  media:
+  node_modules:

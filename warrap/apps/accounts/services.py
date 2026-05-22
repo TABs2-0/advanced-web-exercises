@@ -5,6 +5,8 @@ All business logic for the accounts domain.
 Views call these functions; models don't talk to views.
 This separation makes logic easy to test and reuse.
 """
+import json
+
 from django.utils.translation import gettext_lazy as _
 
 from .models import User, Vouch
@@ -80,3 +82,47 @@ def get_user_completed_tasks(user: User, limit: int = 6):
         .select_related("poster")
         .order_by("-updated_at")[:limit]
     )
+
+
+def get_user_activity_analytics(user: User) -> dict:
+    """Return profile analytics derived from available activity."""
+    from apps.hustles.models import Task, TaskApplication
+
+    completed = Task.objects.filter(claimer=user, status=Task.StatusChoices.COMPLETED)
+    posted = Task.objects.filter(poster=user)
+    applications = TaskApplication.objects.filter(applicant=user)
+
+    category_counts = {}
+    for task in completed:
+        label = task.get_category_display()
+        category_counts[label] = category_counts.get(label, 0) + 1
+
+    stats = {
+        "posted": posted.count(),
+        "applied": applications.count(),
+        "selected": applications.filter(status=TaskApplication.StatusChoices.ACCEPTED).count(),
+        "completed": completed.count(),
+    }
+    total_activity = sum(stats.values())
+    selection_rate = round((stats["selected"] / stats["applied"]) * 100) if stats["applied"] else 0
+
+    if stats["completed"] >= 3:
+        brief = _("You are building a visible work record. Completed gigs are the strongest trust signal on Warrap.")
+    elif stats["applied"]:
+        brief = _("You have started applying. As posters choose you and both sides confirm completion, your Street Cred gets stronger.")
+    elif stats["posted"]:
+        brief = _("You are creating opportunities. Applicant activity on your gigs will appear here as it grows.")
+    else:
+        brief = _("Start by posting or applying for a hustle. Your activity insights will grow from there.")
+
+    category_labels = [str(label) for label in category_counts.keys()] or [str(_("No completed gigs yet"))]
+    category_values = list(category_counts.values()) or [1]
+
+    return {
+        "has_activity": total_activity > 0,
+        "stats": stats,
+        "selection_rate": selection_rate,
+        "category_labels_json": json.dumps(category_labels),
+        "category_values_json": json.dumps(category_values),
+        "brief": brief,
+    }

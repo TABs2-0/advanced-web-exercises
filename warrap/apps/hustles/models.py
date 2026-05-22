@@ -126,6 +126,16 @@ class Task(models.Model):
     )
     created_at = models.DateTimeField(_("created at"), auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
+    poster_marked_complete_at = models.DateTimeField(
+        _("poster marked complete at"),
+        null=True,
+        blank=True,
+    )
+    claimer_marked_complete_at = models.DateTimeField(
+        _("claimer marked complete at"),
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         verbose_name = _("task")
@@ -151,6 +161,18 @@ class Task(models.Model):
     @property
     def pay_display(self) -> str:
         return f"{int(self.pay):,} XAF"
+
+    @property
+    def completion_waiting_on(self) -> str:
+        if self.status != self.StatusChoices.CLAIMED:
+            return ""
+        if not self.poster_marked_complete_at and not self.claimer_marked_complete_at:
+            return _("poster and applicant")
+        if not self.poster_marked_complete_at:
+            return _("poster")
+        if not self.claimer_marked_complete_at:
+            return _("applicant")
+        return ""
 
     @property
     def whatsapp_link(self) -> str:
@@ -192,6 +214,59 @@ class Task(models.Model):
         lat_offset = (random.uniform(-radius_m, radius_m)) / 111_320
         lng_offset = (random.uniform(-radius_m, radius_m)) / (111_320 * math.cos(math.radians(point.y)))
         return Point(point.x + lng_offset, point.y + lat_offset, srid=4326)
+
+
+# ---------------------------------------------------------------------------
+# Applications
+# ---------------------------------------------------------------------------
+
+class TaskApplication(models.Model):
+    """
+    A user's request to work on a task.
+    Posters choose one application; only then does the task become claimed.
+    """
+
+    class StatusChoices(models.TextChoices):
+        PENDING = "pending", _("Pending")
+        ACCEPTED = "accepted", _("Accepted")
+        REJECTED = "rejected", _("Rejected")
+        WITHDRAWN = "withdrawn", _("Withdrawn")
+
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name="applications",
+        verbose_name=_("task"),
+    )
+    applicant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="task_applications",
+        verbose_name=_("applicant"),
+    )
+    note = models.CharField(_("note"), max_length=180, blank=True)
+    status = models.CharField(
+        _("status"),
+        max_length=15,
+        choices=StatusChoices.choices,
+        default=StatusChoices.PENDING,
+        db_index=True,
+    )
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(_("updated at"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("task application")
+        verbose_name_plural = _("task applications")
+        unique_together = [("task", "applicant")]
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["task", "status"]),
+            models.Index(fields=["applicant", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.applicant} -> {self.task}: {self.get_status_display()}"
 
 
 # ---------------------------------------------------------------------------

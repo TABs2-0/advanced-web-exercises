@@ -3,39 +3,66 @@
 
 {% block meta_title %}{% trans "Join Warrap" %}{% endblock %}
 {% block meta_robots %}noindex, nofollow{% endblock %}
+{% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
+{% block main_class %}pt-0{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-input-wrap input,
+  .auth-input-wrap select {
+    width: 100%;
+    border: 1px solid rgba(20, 20, 19, .18);
+    border-radius: 16px;
+    background: #fff;
+    color: #141413;
+    padding: .9rem 1rem;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .auth-input-wrap input:focus,
+  .auth-input-wrap select:focus {
+    border-color: #141413;
+    box-shadow: 0 0 0 1px #141413;
+  }
+  .auth-input-wrap.has-toggle input { padding-right: 3rem; }
+  .auth-field-error input,
+  .auth-field-error select {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 1px #dc2626 !important;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-6rem)] flex items-center justify-center px-4 py-12">
-  <div class="w-full max-w-xl">
-    <p class="ghost-headline text-center mb-[-1.5rem] select-none pointer-events-none">Join</p>
-
-    <div class="card animate-slide-up">
-      <div class="text-center mb-8">
-        <p class="eyebrow justify-center mb-3">{% trans "Create account" %}</p>
-        <h1 class="text-card-title font-medium text-ink">{% trans "Get on the map" %}</h1>
+<div class="min-h-screen grid lg:grid-cols-[1.05fr_0.95fr] bg-canvas">
+  <section class="min-h-[70vh] lg:min-h-screen flex items-center justify-center px-5 py-8 sm:px-8 order-2 lg:order-1">
+    <div class="w-full max-w-xl">
+      <div class="mb-6">
+        <a href="{% url 'home' %}" class="inline-flex items-center gap-2 text-ink mb-8">
+          <span class="h-9 w-9 rounded-btn bg-ink text-canvas flex items-center justify-center font-bold">W</span>
+          <span class="font-medium">Warrap</span>
+        </a>
+        <p class="eyebrow text-slate mb-3">{% trans "Create your profile" %}</p>
+        <h1 class="text-section font-medium tracking-tight text-ink">{% trans "Get on the map" %}</h1>
         <p class="text-sm text-slate mt-2 font-body">
-          {% trans "Step" %} <span id="current-step-num">1</span> {% trans "of 3. Keep it light." %}
+          {% trans "Step" %} <span id="current-step-num">1</span> {% trans "of 3" %}
         </p>
       </div>
 
-      <div class="mb-6">
-        <a href="{% provider_login_url 'google' process='login' %}"
-           class="flex items-center justify-center gap-3 w-full
-                  bg-white border border-ink/20 rounded-btn
-                  px-4 py-3 text-sm font-medium text-ink
-                  hover:bg-canvas transition-all duration-200 shadow-sm">
-          <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
-          {% trans "Sign up with Google" %}
-        </a>
-      </div>
+      <a href="{% provider_login_url 'google' process='login' %}"
+         class="flex items-center justify-center gap-3 w-full bg-white border border-ink/20 rounded-btn px-4 py-3 text-sm font-medium text-ink hover:bg-lifted transition-all duration-200 shadow-sm">
+        <svg width="20" height="20" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        {% trans "Sign up with Google" %}
+      </a>
 
-      <div class="flex items-center gap-3 mb-6">
+      <div class="flex items-center gap-3 my-5">
         <div class="flex-1 h-px bg-ink/10"></div>
         <span class="text-xs text-slate">{% trans "or build your profile" %}</span>
         <div class="flex-1 h-px bg-ink/10"></div>
@@ -47,118 +74,253 @@
         <div id="step-3-bar" class="h-1.5 rounded-full bg-ink/20"></div>
       </div>
 
-      <form method="post" action="{% url 'account_signup' %}" class="flex flex-col gap-5" novalidate>
+      <form method="post" action="{% url 'account_signup' %}" id="signup-form" class="flex flex-col gap-5" novalidate>
         {% csrf_token %}
 
         {% if form.non_field_errors %}
           <div class="toast-error px-4 py-3 rounded-btn border text-sm">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <section class="form-step flex flex-col gap-4">
-          <div class="grid grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1.5">
+        <section class="form-step flex flex-col gap-4" data-step="1">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div class="auth-input-wrap flex flex-col gap-1.5">
               <label for="{{ form.first_name.id_for_label }}" class="text-xs font-medium text-ink">{{ form.first_name.label }}</label>
               {{ form.first_name }}
-              {% for e in form.first_name.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+              {% for e in form.first_name.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
             </div>
-            <div class="flex flex-col gap-1.5">
+            <div class="auth-input-wrap flex flex-col gap-1.5">
               <label for="{{ form.last_name.id_for_label }}" class="text-xs font-medium text-ink">{{ form.last_name.label }}</label>
               {{ form.last_name }}
-              {% for e in form.last_name.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+              {% for e in form.last_name.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
             </div>
           </div>
 
-          <div class="flex flex-col gap-1.5">
+          <div class="auth-input-wrap flex flex-col gap-1.5">
             <label for="{{ form.username.id_for_label }}" class="text-xs font-medium text-ink">
               {{ form.username.label }} <span class="text-signal ml-0.5">*</span>
             </label>
             {{ form.username }}
-            {% if form.username.help_text %}<p class="text-[11px] text-slate">{{ form.username.help_text }}</p>{% endif %}
-            {% for e in form.username.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+            {% for e in form.username.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
           </div>
 
-          <button type="button" class="btn-primary w-full justify-center py-3" onclick="goToStep(2)">
+          <button type="button" class="btn-primary w-full justify-center py-3" onclick="goToSignupStep(2, true)">
             {% trans "Next" %}
           </button>
         </section>
 
-        <section class="form-step hidden flex flex-col gap-4">
+        <section class="form-step hidden flex flex-col gap-4" data-step="2">
           <div class="grid sm:grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1.5">
+            <div class="auth-input-wrap flex flex-col gap-1.5">
               <label for="{{ form.email.id_for_label }}" class="text-xs font-medium text-ink">
                 {{ form.email.label }} <span class="text-signal ml-0.5">*</span>
               </label>
               {{ form.email }}
-              {% for e in form.email.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+              {% for e in form.email.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
             </div>
-            <div class="flex flex-col gap-1.5">
+            <div class="auth-input-wrap flex flex-col gap-1.5">
               <label for="{{ form.phone_number.id_for_label }}" class="text-xs font-medium text-ink">{{ form.phone_number.label }}</label>
               {{ form.phone_number }}
-              {% if form.phone_number.help_text %}<p class="text-[11px] text-slate">{{ form.phone_number.help_text }}</p>{% endif %}
-              {% for e in form.phone_number.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+              <p class="text-[11px] text-slate">{{ form.phone_number.help_text }}</p>
+              {% for e in form.phone_number.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
             </div>
           </div>
 
-          <div class="flex flex-col gap-1.5">
+          <div class="auth-input-wrap flex flex-col gap-1.5">
             <label for="{{ form.city.id_for_label }}" class="text-xs font-medium text-ink">
               {{ form.city.label }} <span class="text-signal ml-0.5">*</span>
             </label>
             {{ form.city }}
-            {% for e in form.city.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+            {% for e in form.city.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <button type="button" class="btn-secondary justify-center py-3" onclick="goToStep(1)">{% trans "Back" %}</button>
-            <button type="button" class="btn-primary justify-center py-3" onclick="goToStep(3)">{% trans "Next" %}</button>
+            <button type="button" class="btn-secondary justify-center py-3" onclick="goToSignupStep(1)">{% trans "Back" %}</button>
+            <button type="button" class="btn-primary justify-center py-3" onclick="goToSignupStep(3, true)">{% trans "Next" %}</button>
           </div>
         </section>
 
-        <section class="form-step hidden flex flex-col gap-4">
-          <div class="flex flex-col gap-1.5">
+        <section class="form-step hidden flex flex-col gap-4" data-step="3">
+          <div class="auth-input-wrap has-toggle flex flex-col gap-1.5">
             <label for="{{ form.password1.id_for_label }}" class="text-xs font-medium text-ink">
               {{ form.password1.label }} <span class="text-signal ml-0.5">*</span>
             </label>
-            {{ form.password1 }}
-            {% if form.password1.help_text %}<p class="text-[11px] text-slate">{{ form.password1.help_text }}</p>{% endif %}
-            {% for e in form.password1.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+            <div class="relative">
+              {{ form.password1 }}
+              <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-ink" data-password-toggle="{{ form.password1.id_for_label }}" aria-label="{% trans 'Show password' %}">
+                <i class="ri-eye-line"></i>
+              </button>
+            </div>
+            {% for e in form.password1.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
           </div>
 
-          <div class="flex flex-col gap-1.5">
+          <div class="auth-input-wrap has-toggle flex flex-col gap-1.5">
             <label for="{{ form.password2.id_for_label }}" class="text-xs font-medium text-ink">
               {{ form.password2.label }} <span class="text-signal ml-0.5">*</span>
             </label>
-            {{ form.password2 }}
-            {% for e in form.password2.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+            <div class="relative">
+              {{ form.password2 }}
+              <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-ink" data-password-toggle="{{ form.password2.id_for_label }}" aria-label="{% trans 'Show password' %}">
+                <i class="ri-eye-line"></i>
+              </button>
+            </div>
+            {% for e in form.password2.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
           </div>
 
           {% for field in form %}
             {% if field.name != "first_name" and field.name != "last_name" and field.name != "username" and field.name != "email" and field.name != "phone_number" and field.name != "city" and field.name != "password1" and field.name != "password2" %}
-              <div class="flex flex-col gap-1.5">
-                <label for="{{ field.id_for_label }}" class="text-xs font-medium text-ink">
-                  {{ field.label }}
-                  {% if field.field.required %}<span class="text-signal ml-0.5">*</span>{% endif %}
-                </label>
+              <div class="auth-input-wrap flex flex-col gap-1.5">
+                <label for="{{ field.id_for_label }}" class="text-xs font-medium text-ink">{{ field.label }}</label>
                 {{ field }}
-                {% if field.help_text %}<p class="text-[11px] text-slate">{{ field.help_text }}</p>{% endif %}
-                {% for e in field.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
+                {% for e in field.errors %}<p class="text-xs text-red-600 server-error">{{ e }}</p>{% endfor %}
               </div>
             {% endif %}
           {% endfor %}
 
           <div class="grid grid-cols-2 gap-3">
-            <button type="button" class="btn-secondary justify-center py-3" onclick="goToStep(2)">{% trans "Back" %}</button>
+            <button type="button" class="btn-secondary justify-center py-3" onclick="goToSignupStep(2)">{% trans "Back" %}</button>
             <button type="submit" class="btn-primary justify-center py-3">{% trans "Join Warrap" %}</button>
           </div>
         </section>
       </form>
 
-      <p class="text-center text-sm text-slate mt-6 font-body">
+      <p class="text-sm text-slate mt-6 font-body">
         {% trans "Already on the map?" %}
         <a href="{% url 'account_login' %}" class="text-ink font-medium underline underline-offset-2">
           {% trans "Log in" %}
         </a>
       </p>
     </div>
-  </div>
+  </section>
+
+  <section class="relative min-h-[30vh] lg:min-h-screen overflow-hidden bg-ink text-canvas order-1 lg:order-2">
+    <img
+      src="https://images.pexels.com/photos/33273819/pexels-photo-33273819.jpeg?auto=compress&cs=tinysrgb&w=1400"
+      alt="{% trans 'People collaborating with laptops' %}"
+      class="absolute inset-0 h-full w-full object-cover opacity-80"
+    />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/25 to-transparent"></div>
+    <div class="relative z-10 h-full flex flex-col justify-end p-6 sm:p-10 lg:p-12">
+      <p class="eyebrow text-canvas/60 mb-4">{% trans "Find work. Build trust." %}</p>
+      <h2 class="text-[clamp(34px,5vw,72px)] leading-none font-medium tracking-tight max-w-xl">
+        {% trans "Your neighborhood hustle record starts here." %}
+      </h2>
+      <div class="mt-6 grid grid-cols-3 gap-3 max-w-lg">
+        <div class="rounded-hero bg-white/10 border border-white/10 p-4">
+          <p class="text-2xl font-medium">3</p>
+          <p class="text-sm text-canvas/65">{% trans "steps" %}</p>
+        </div>
+        <div class="rounded-hero bg-white/10 border border-white/10 p-4">
+          <p class="text-2xl font-medium">5</p>
+          <p class="text-sm text-canvas/65">{% trans "cities" %}</p>
+        </div>
+        <div class="rounded-hero bg-white/10 border border-white/10 p-4">
+          <p class="text-2xl font-medium scale-150 ms-6">∞</p>
+          <p class="text-sm text-canvas/65">{% trans "warraps" %}</p>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function clearSignupError(input) {
+    const wrap = input.closest('.auth-input-wrap');
+    if (!wrap) return;
+    wrap.classList.remove('auth-field-error');
+    wrap.querySelectorAll('.client-error').forEach((el) => el.remove());
+  }
+
+  function showSignupError(input, message) {
+    const wrap = input.closest('.auth-input-wrap');
+    if (!wrap) return;
+    clearSignupError(input);
+    wrap.classList.add('auth-field-error');
+    const error = document.createElement('p');
+    error.className = 'text-xs text-red-600 client-error';
+    error.textContent = message;
+    wrap.appendChild(error);
+    input.focus();
+  }
+
+  function validateSignupStep(step) {
+    const fieldsByStep = {
+      1: ['id_first_name', 'id_last_name', 'id_username'],
+      2: ['id_email', 'id_city'],
+      3: ['id_password1', 'id_password2'],
+    };
+    fieldsByStep[step].forEach((id) => {
+      const input = document.getElementById(id);
+      if (input) clearSignupError(input);
+    });
+
+    if (step === 1) {
+      for (const id of ['id_first_name', 'id_last_name', 'id_username']) {
+        const input = document.getElementById(id);
+        if (!input.value.trim()) { showSignupError(input, 'This field is required.'); return false; }
+      }
+      if (document.getElementById('id_username').value.trim().length < 3) {
+        showSignupError(document.getElementById('id_username'), 'Use at least 3 characters.');
+        return false;
+      }
+    }
+
+    if (step === 2) {
+      const email = document.getElementById('id_email');
+      const city = document.getElementById('id_city');
+      if (!email.value.trim()) { showSignupError(email, 'Email is required.'); return false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+        showSignupError(email, 'Enter a valid email address.');
+        return false;
+      }
+      if (!city.value) { showSignupError(city, 'Choose your city.'); return false; }
+    }
+
+    if (step === 3) {
+      const p1 = document.getElementById('id_password1');
+      const p2 = document.getElementById('id_password2');
+      if (!p1.value) { showSignupError(p1, 'Password is required.'); return false; }
+      if (p1.value.length < 8) { showSignupError(p1, 'Use at least 8 characters.'); return false; }
+      if (!p2.value) { showSignupError(p2, 'Confirm your password.'); return false; }
+      if (p1.value !== p2.value) { showSignupError(p2, 'Passwords do not match.'); return false; }
+    }
+
+    return true;
+  }
+
+  function goToSignupStep(step, validateCurrent = false) {
+    const current = Number(document.querySelector('.form-step:not(.hidden)')?.dataset.step || 1);
+    if (validateCurrent && !validateSignupStep(current)) return;
+    document.querySelectorAll('.form-step').forEach((panel) => panel.classList.add('hidden'));
+    document.querySelector(`.form-step[data-step="${step}"]`)?.classList.remove('hidden');
+    document.getElementById('current-step-num').textContent = step;
+    [1, 2, 3].forEach((n) => {
+      const bar = document.getElementById(`step-${n}-bar`);
+      bar.classList.toggle('bg-ink', n <= step);
+      bar.classList.toggle('bg-ink/20', n > step);
+    });
+  }
+
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-password-toggle]');
+    if (!button) return;
+    const input = document.getElementById(button.dataset.passwordToggle);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    button.innerHTML = `<i class="${show ? 'ri-eye-off-line' : 'ri-eye-line'}"></i>`;
+  });
+
+  document.getElementById('signup-form')?.addEventListener('submit', (event) => {
+    if (!validateSignupStep(1)) { event.preventDefault(); goToSignupStep(1); return; }
+    if (!validateSignupStep(2)) { event.preventDefault(); goToSignupStep(2); return; }
+    if (!validateSignupStep(3)) { event.preventDefault(); goToSignupStep(3); }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const erroredStep = document.querySelector('.server-error')?.closest('.form-step')?.dataset.step;
+    if (erroredStep) goToSignupStep(Number(erroredStep));
+  });
+</script>
 {% endblock %}

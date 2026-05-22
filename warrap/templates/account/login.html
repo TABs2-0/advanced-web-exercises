@@ -3,46 +3,79 @@
 
 {% block meta_title %}{% trans "Log in" %}{% endblock %}
 {% block meta_robots %}noindex, nofollow{% endblock %}
+{% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
+{% block main_class %}pt-0{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-input-wrap input {
+    width: 100%;
+    border: 1px solid rgba(20, 20, 19, .18);
+    border-radius: 16px;
+    background: #fff;
+    color: #141413;
+    padding: .9rem 1rem;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .auth-input-wrap input:focus {
+    border-color: #141413;
+    box-shadow: 0 0 0 1px #141413;
+  }
+  .auth-input-wrap.has-toggle input { padding-right: 3rem; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-6rem)] flex items-center justify-center px-4 py-12">
-  <div class="w-full max-w-md">
+<div class="min-h-screen grid lg:grid-cols-[0.95fr_1.05fr] bg-canvas">
+  <section class="relative min-h-[34vh] lg:min-h-screen overflow-hidden bg-ink text-canvas">
+    <img
+      src="https://images.pexels.com/photos/8060424/pexels-photo-8060424.jpeg?auto=compress&cs=tinysrgb&w=1400"
+      alt="{% trans 'People working on laptops outdoors' %}"
+      class="absolute inset-0 h-full w-full object-cover opacity-80"
+    />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/35 to-transparent"></div>
+    <div class="relative z-10 h-full flex flex-col justify-end p-6 sm:p-10 lg:p-12">
+      <a href="{% url 'home' %}" class="inline-flex items-center gap-2 mb-auto w-fit text-canvas">
+        <span class="h-9 w-9 rounded-btn bg-white text-ink flex items-center justify-center font-bold">W</span>
+        <span class="font-medium">Warrap</span>
+      </a>
+      <p class="eyebrow text-canvas/60 mb-4">{% trans "Back to the map" %}</p>
+      <h1 class="text-[clamp(38px,6vw,78px)] leading-none font-medium tracking-tight max-w-xl">
+        {% trans "Pick up where the hustle left off." %}
+      </h1>
+      <p class="mt-5 text-lg text-canvas/70 max-w-md">
+        {% trans "Log in to apply, post, choose applicants, and track your street cred." %}
+      </p>
+    </div>
+  </section>
 
-    <p class="ghost-headline text-center mb-[-1.5rem] select-none pointer-events-none">Login</p>
-
-    <div class="card animate-slide-up">
-
-      <div class="text-center mb-8">
-        <p class="eyebrow justify-center mb-3">{% trans "Welcome back" %}</p>
-        <h1 class="text-card-title font-medium text-ink">{% trans "Back in the streets?" %}</h1>
-        <p class="text-sm text-slate mt-2 font-body">{% trans "Your hustle-map missed you." %}</p>
+  <section class="min-h-[66vh] lg:min-h-screen flex items-center justify-center px-5 py-8 sm:px-8">
+    <div class="w-full max-w-md">
+      <div class="mb-8">
+        <p class="eyebrow text-slate mb-3">{% trans "Welcome back" %}</p>
+        <h2 class="text-section font-medium tracking-tight text-ink">{% trans "Log in" %}</h2>
       </div>
 
-      {# ── Google OAuth ──────────────────────────────────────────────────── #}
-      <div class="mb-6">
-        <a href="{% provider_login_url 'google' process='login' %}"
-           class="flex items-center justify-center gap-3 w-full
-                  bg-white border border-ink/20 rounded-btn
-                  px-4 py-3 text-sm font-medium text-ink
-                  hover:bg-canvas transition-all duration-200 shadow-sm">
-          <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
-          {% trans "Continue with Google" %}
-        </a>
-      </div>
+      <a href="{% provider_login_url 'google' process='login' %}"
+         class="flex items-center justify-center gap-3 w-full bg-white border border-ink/20 rounded-btn px-4 py-3 text-sm font-medium text-ink hover:bg-lifted transition-all duration-200 shadow-sm">
+        <svg width="18" height="18" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        {% trans "Continue with Google" %}
+      </a>
 
-      <div class="flex items-center gap-3 mb-6">
+      <div class="flex items-center gap-3 my-6">
         <div class="flex-1 h-px bg-ink/10"></div>
         <span class="text-xs text-slate">{% trans "or" %}</span>
         <div class="flex-1 h-px bg-ink/10"></div>
       </div>
 
-      {# ── Credentials form ───────────────────────────────────────────────── #}
       <form method="post" action="{% url 'account_login' %}" class="flex flex-col gap-4" novalidate>
         {% csrf_token %}
 
@@ -50,25 +83,23 @@
           <div class="toast-error px-4 py-3 rounded-btn border text-sm">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <div class="flex flex-col gap-1.5">
-          <label for="{{ form.login.id_for_label }}" class="text-xs font-medium text-ink">
-            {% trans "Username or email" %}
-          </label>
+        <div class="auth-input-wrap flex flex-col gap-1.5">
+          <label for="{{ form.login.id_for_label }}" class="text-xs font-medium text-ink">{% trans "Username or email" %}</label>
           {{ form.login }}
           {% for e in form.login.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
         </div>
 
-        <div class="flex flex-col gap-1.5">
+        <div class="auth-input-wrap has-toggle flex flex-col gap-1.5">
           <div class="flex items-center justify-between">
-            <label for="{{ form.password.id_for_label }}" class="text-xs font-medium text-ink">
-              {% trans "Password" %}
-            </label>
-            <a href="{% url 'account_reset_password' %}"
-               class="text-xs text-slate hover:text-ink transition-colors">
-              {% trans "Forgot?" %}
-            </a>
+            <label for="{{ form.password.id_for_label }}" class="text-xs font-medium text-ink">{% trans "Password" %}</label>
+            <a href="{% url 'account_reset_password' %}" class="text-xs text-slate hover:text-ink transition-colors">{% trans "Forgot?" %}</a>
           </div>
-          {{ form.password }}
+          <div class="relative">
+            {{ form.password }}
+            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-ink" data-password-toggle="{{ form.password.id_for_label }}" aria-label="{% trans 'Show password' %}">
+              <i class="ri-eye-line"></i>
+            </button>
+          </div>
           {% for e in form.password.errors %}<p class="text-xs text-red-600">{{ e }}</p>{% endfor %}
         </div>
 
@@ -84,14 +115,27 @@
         </button>
       </form>
 
-      <p class="text-center text-sm text-slate mt-6 font-body">
+      <p class="text-sm text-slate mt-6 font-body">
         {% trans "New to Warrap?" %}
         <a href="{% url 'account_signup' %}" class="text-ink font-medium underline underline-offset-2">
           {% trans "Join the streets" %}
         </a>
       </p>
-
     </div>
-  </div>
+  </section>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-password-toggle]');
+    if (!button) return;
+    const input = document.getElementById(button.dataset.passwordToggle);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    button.innerHTML = `<i class="${show ? 'ri-eye-off-line' : 'ri-eye-line'}"></i>`;
+  });
+</script>
 {% endblock %}

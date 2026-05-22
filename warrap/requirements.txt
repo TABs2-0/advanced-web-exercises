@@ -14,7 +14,7 @@ django-environ==0.13.0
 django-redis==6.0.0
 django-tailwind==4.4.2
 django-unfold==0.93.0
-GDAL==3.11.4
+GDAL==3.12.2
 gunicorn==26.0.0
 honcho==2.0.0
 idna==3.14

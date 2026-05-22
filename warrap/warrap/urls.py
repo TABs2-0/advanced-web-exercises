@@ -8,6 +8,8 @@ from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from apps.hustles.views import root_view
 
+admin.site.has_permission = lambda request: request.user.is_active and request.user.is_superuser
+
 urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
 ]

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from unfold.admin import ModelAdmin
 
-from .models import Task, Rating
+from .models import Task, Rating, TaskApplication
 
 
 @admin.register(Task)
@@ -29,3 +29,12 @@ class RatingAdmin(ModelAdmin):
     list_filter = ["score"]
     search_fields = ["rater__username", "ratee__username", "task__title"]
     readonly_fields = ["created_at"]
+
+
+@admin.register(TaskApplication)
+class TaskApplicationAdmin(ModelAdmin):
+    list_display = ["task", "applicant", "status", "created_at"]
+    list_filter = ["status", "created_at"]
+    search_fields = ["task__title", "applicant__username", "note"]
+    readonly_fields = ["created_at", "updated_at"]
+    raw_id_fields = ["task", "applicant"]

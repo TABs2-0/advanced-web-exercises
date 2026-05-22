@@ -102,6 +102,33 @@
     </div>
 
     <div class="lg:col-span-2">
+      {% if analytics.has_activity %}
+        <section class="card mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
+            <div>
+              <p class="eyebrow text-slate mb-2">{% trans "Activity analytics" %}</p>
+              <h2 class="text-2xl font-medium text-ink">{% trans "How the hustle is moving" %}</h2>
+              <p class="text-slate mt-2">{{ analytics.brief }}</p>
+            </div>
+            <div class="rounded-hero bg-ink text-canvas p-4 min-w-36">
+              <p class="text-sm text-canvas/60">{% trans "Selection rate" %}</p>
+              <p class="text-3xl font-medium">{{ analytics.selection_rate }}%</p>
+            </div>
+          </div>
+
+          <div class="grid sm:grid-cols-4 gap-3 mb-6">
+            <div class="rounded-hero bg-canvas p-4 border border-ink/5"><p class="text-2xl font-medium">{{ analytics.stats.posted }}</p><p class="text-sm text-slate">{% trans "Posted" %}</p></div>
+            <div class="rounded-hero bg-canvas p-4 border border-ink/5"><p class="text-2xl font-medium">{{ analytics.stats.applied }}</p><p class="text-sm text-slate">{% trans "Applied" %}</p></div>
+            <div class="rounded-hero bg-canvas p-4 border border-ink/5"><p class="text-2xl font-medium">{{ analytics.stats.selected }}</p><p class="text-sm text-slate">{% trans "Selected" %}</p></div>
+            <div class="rounded-hero bg-canvas p-4 border border-ink/5"><p class="text-2xl font-medium">{{ analytics.stats.completed }}</p><p class="text-sm text-slate">{% trans "Completed" %}</p></div>
+          </div>
+
+          <div class="bg-canvas border border-ink/5 rounded-hero p-4">
+            <canvas id="activityChart" height="150"></canvas>
+          </div>
+        </section>
+      {% endif %}
+
       <p class="eyebrow mb-4">{% trans "Completed Hustles" %}</p>
 
       {% if recent_tasks %}
@@ -125,4 +152,40 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  {% if analytics.has_activity %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('activityChart');
+        if (!canvas || !window.Chart) return;
+        new Chart(canvas, {
+          type: 'bar',
+          data: {
+            labels: {{ analytics.category_labels_json|safe }},
+            datasets: [{
+              label: 'Completed gigs by category',
+              data: {{ analytics.category_values_json|safe }},
+              backgroundColor: ['#CF4500', '#3860BE', '#141413', '#9A3A0A', '#696969'],
+              borderRadius: 10,
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: ctx => `${ctx.raw} completed` } }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#555555' } },
+              y: { beginAtZero: true, precision: 0, grid: { color: 'rgba(20,20,19,0.08)' }, ticks: { color: '#555555', stepSize: 1 } }
+            }
+          }
+        });
+      });
+    </script>
+  {% endif %}
 {% endblock %}

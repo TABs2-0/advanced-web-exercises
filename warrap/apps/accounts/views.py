@@ -19,6 +19,7 @@ def profile_view(request, username: str):
     """Public profile page for any user."""
     profile_user = get_object_or_404(User, username=username)
     recent_tasks = services.get_user_completed_tasks(profile_user, limit=6)
+    analytics = services.get_user_activity_analytics(profile_user)
     vouches_received = (
         Vouch.objects.filter(vouchee=profile_user)
         .select_related("voucher")
@@ -35,6 +36,7 @@ def profile_view(request, username: str):
     return render(request, "accounts/profile.html", {
         "profile_user": profile_user,
         "recent_tasks": recent_tasks,
+        "analytics": analytics,
         "vouches_received": vouches_received,
         "can_vouch": can_vouch,
         "already_vouched": already_vouched,

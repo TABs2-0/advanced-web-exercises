@@ -8,6 +8,8 @@ Environment-specific secrets are loaded from .env via django-environ.
 import os
 from pathlib import Path
 from shutil import which
+from django.urls import reverse_lazy
+from django.templatetags.static import static
 
 import environ
 
@@ -17,14 +19,14 @@ import environ
 # BASE_DIR = warrap/ (the repo root, parent of the warrap/ Django package)
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# ---------------------------------------------------------------------------
-# Security – load from environment
-# ---------------------------------------------------------------------------
-SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-in-production")
-
 # Read .env from repo root
 env = environ.Env()
 environ.Env.read_env(BASE_DIR / ".env")
+
+# ---------------------------------------------------------------------------
+# Security - load from environment
+# ---------------------------------------------------------------------------
+SECRET_KEY = env("SECRET_KEY", default="change-me-in-production")
 
 # ---------------------------------------------------------------------------
 # Application registry
@@ -107,19 +109,24 @@ TEMPLATES = [
 ]
 
 # ---------------------------------------------------------------------------
-# Database — PostGIS (overridden per environment if needed)
+# Database - PostGIS (overridden per environment if needed)
 # ---------------------------------------------------------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": os.environ.get("DB_NAME", "db"),
-        "USER": os.environ.get("DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+database_url = env("DATABASE_URL", default=None)
+if database_url:
+    DATABASES = {"default": env.db_url("DATABASE_URL")}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.contrib.gis.db.backends.postgis",
+            "NAME": env("DB_NAME", default="warrap_db"),
+            "USER": env("DB_USER", default="postgres"),
+            "PASSWORD": env("DB_PASSWORD", default="postgres"),
+            "HOST": env("DB_HOST", default="localhost"),
+            "PORT": env("DB_PORT", default="5432"),
+        }
     }
-}
-# Force the PostGIS backend even when DATABASE_URL uses postgres://
+
+# Force the PostGIS backend even when DATABASE_URL uses postgres://.
 DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
 
 # ---------------------------------------------------------------------------
@@ -244,10 +251,21 @@ NPM_BIN_PATH = which("npm")
 # ---------------------------------------------------------------------------
 # Django Unfold admin
 # ---------------------------------------------------------------------------
+
 UNFOLD = {
-    "SITE_TITLE": "Warrap Admin",
-    "SITE_HEADER": "Warrap",
+    "SITE_TITLE": "Warrap Secret HQ",
+    "SITE_HEADER": "Control Center of Chaos",
+    "SITE_SUBHEADER": "Dashboard of Dubious Decisions",
+    "SITE_ICON": lambda request: static("icons/logo.png"),
     "SITE_URL": "/",
+    "SITE_FAVICONS": [
+        {
+            'rel': 'icon',
+            'sizes': '32x32',
+            'type': 'image/svg+xml',
+            'href': lambda request: static('icons/logo.png'),
+        },
+    ],
     "COLORS": {
         "primary": {
             "50": "253 246 237",
@@ -263,9 +281,101 @@ UNFOLD = {
             "950": "60 22 5",
         },
     },
+    'STYLES': [
+        lambda request: static("unfold/fonts/inter/styles.css"),
+        lambda request: static("unfold/fonts/material-symbols/styles.css"),
+    ],
     "SIDEBAR": {
         "show_search": True,
+        "command_search": True,
         "show_all_applications": True,
+        "navigation": [
+            {
+                "title": _("Accounts"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Users"),
+                        "icon": "people",
+                        "link": reverse_lazy("admin:accounts_user_changelist"),
+                    },
+                    {
+                        "title": _("Vouches"),
+                        "icon": "verified_user",
+                        "link": reverse_lazy("admin:accounts_vouch_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Hustles"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Tasks"),
+                        "icon": "work",
+                        "link": reverse_lazy("admin:hustles_task_changelist"),
+                    },
+                    {
+                        "title": _("Applications"),
+                        "icon": "assignment_turned_in",
+                        "link": reverse_lazy("admin:hustles_taskapplication_changelist"),
+                    },
+                    {
+                        "title": _("Ratings"),
+                        "icon": "star",
+                        "link": reverse_lazy("admin:hustles_rating_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Authentication & Authorization"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Groups"),
+                        "icon": "groups",
+                        "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
+                    {
+                        "title": _("Email Addresses"),
+                        "icon": "email",
+                        "link": reverse_lazy("admin:account_emailaddress_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Social Accounts"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Social Accounts"),
+                        "icon": "account_circle",
+                        "link": reverse_lazy("admin:socialaccount_socialaccount_changelist"),
+                    },
+                    {
+                        "title": _("Social Apps"),
+                        "icon": "apps",
+                        "link": reverse_lazy("admin:socialaccount_socialapp_changelist"),
+                    },
+                    {
+                        "title": _("Social Tokens"),
+                        "icon": "vpn_key",
+                        "link": reverse_lazy("admin:socialaccount_socialtoken_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Sites"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Sites"),
+                        "icon": "language",
+                        "link": reverse_lazy("admin:sites_site_changelist"),
+                    },
+                ],
+            },
+        ],
     },
 }
 

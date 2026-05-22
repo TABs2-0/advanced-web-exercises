@@ -102,28 +102,39 @@
 
         {% if task.is_open and not is_poster %}
           {% if user.is_authenticated %}
-            <form method="post" action="{% url 'hustles:claim_task' task.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="btn-primary w-full justify-center text-base">
-                <i class="ri-lock-line"></i>
-                {% trans "Lock this hustle" %}
-              </button>
-            </form>
+            {% if user_application %}
+              <div class="bg-canvas border border-ink/10 rounded-hero p-4 text-slate">
+                <i class="ri-send-plane-line text-xl text-ink"></i>
+                <p class="mt-2">
+                  {% trans "You applied for this hustle." %}
+                  <span class="font-medium text-ink">{{ user_application.get_status_display }}</span>
+                </p>
+              </div>
+            {% else %}
+              <form method="post" action="{% url 'hustles:apply_task' task.pk %}" class="space-y-3">
+                {% csrf_token %}
+                {{ application_form.note }}
+                <button type="submit" class="btn-primary w-full justify-center text-base">
+                  <i class="ri-send-plane-line"></i>
+                  {% trans "Apply for this hustle" %}
+                </button>
+              </form>
+            {% endif %}
           {% else %}
             <a href="{% url 'account_login' %}" class="btn-primary w-full justify-center">
               <i class="ri-login-circle-line"></i>
-              {% trans "Log in to claim" %}
+              {% trans "Log in to apply" %}
             </a>
           {% endif %}
         {% elif is_poster %}
           <div class="bg-canvas border border-ink/10 rounded-hero p-4 text-slate">
             <i class="ri-megaphone-line text-xl text-ink"></i>
-            <p class="mt-2">{% trans "This is your gig. Watch this page for claims and updates." %}</p>
+            <p class="mt-2">{% trans "This is your gig. Choose an applicant when you are ready." %}</p>
           </div>
         {% else %}
           <div class="bg-canvas border border-ink/10 rounded-hero p-4 text-slate">
             <i class="ri-information-line text-xl text-ink"></i>
-            <p class="mt-2">{% trans "This gig is no longer open for claiming." %}</p>
+            <p class="mt-2">{% trans "This gig is no longer open for applications." %}</p>
           </div>
         {% endif %}
 
@@ -132,9 +143,20 @@
             {% csrf_token %}
             <button type="submit" class="btn-secondary w-full justify-center">
               <i class="ri-check-double-line"></i>
-              {% trans "Mark as complete" %}
+              {% if is_poster and task.poster_marked_complete_at %}
+                {% trans "You confirmed completion" %}
+              {% elif is_claimer and task.claimer_marked_complete_at %}
+                {% trans "You confirmed completion" %}
+              {% else %}
+                {% trans "Mark your side as done" %}
+              {% endif %}
             </button>
           </form>
+          {% if task.completion_waiting_on %}
+            <p class="text-sm text-slate mt-2">
+              {% blocktrans with waiting=task.completion_waiting_on %}Waiting on {{ waiting }} to confirm completion.{% endblocktrans %}
+            </p>
+          {% endif %}
         {% endif %}
 
         {% if task.status == 'completed' and user.is_authenticated %}
@@ -144,6 +166,49 @@
           </a>
         {% endif %}
       </div>
+
+      {% if is_poster %}
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <p class="eyebrow text-slate">{% trans "Applicants" %}</p>
+            <span class="category-pill">{{ applications|length }}</span>
+          </div>
+          {% if applications %}
+            <div class="space-y-3">
+              {% for application in applications %}
+                <div class="rounded-hero border border-ink/10 bg-canvas p-4">
+                  <div class="flex items-start gap-3">
+                    <img src="{{ application.applicant.avatar_url }}" alt="" class="w-10 h-10 rounded-btn object-cover">
+                    <div class="min-w-0 flex-1">
+                      <a href="{% url 'accounts:profile' application.applicant.username %}" class="font-medium text-ink hover:text-signal">
+                        @{{ application.applicant.username }}
+                      </a>
+                      <p class="text-sm text-slate">{{ application.created_at|naturaltime }}</p>
+                      {% if application.note %}
+                        <p class="text-sm text-charcoal mt-2">{{ application.note }}</p>
+                      {% endif %}
+                    </div>
+                    <span class="category-pill">{{ application.get_status_display }}</span>
+                  </div>
+                  {% if task.is_open and application.status == 'pending' %}
+                    <form method="post" action="{% url 'hustles:accept_application' application.pk %}" class="mt-3">
+                      {% csrf_token %}
+                      <button type="submit" class="btn-primary w-full justify-center">
+                        <i class="ri-check-line"></i>
+                        {% trans "Choose applicant" %}
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="bg-canvas border border-ink/10 rounded-hero p-4 text-slate">
+              {% trans "No applicants yet. This gig remains listed while it is open." %}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
 
       <div class="card">
         <div class="flex items-center gap-4">
